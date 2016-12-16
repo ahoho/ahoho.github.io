@@ -1,4 +1,4 @@
-﻿---
+---
 layout: post
 title:  "Alternate Realities: Article Collection"
 date:   2016-11-10 20:01:00 -0500
