@@ -1,14 +1,14 @@
----
+﻿---
 layout: post
 title:  "Alternate Realities: Article Collection"
 date:   2016-11-10 20:01:00 -0500
-categories: partisan media analysis
+categories: [partisan, media, analysis]
 ---
 ### Sourcing our Data
 
 #### [ Work in Progress]
 
-In my [last post]({% post_url pma/2016-10-22-intro %}), I meanderingly outlined what many in the political sphere feel is a major problem afflicting contemporary American politics. Namely, that there is a dangerous interplay between a deeply polarized electorate and the similarly splintered media it consumes. Facts are subordinate to the ideological narrative. I hope that examining the texts produced by the media will reify these claims.
+In my [last post]({{ site.baseurl }}{% post_url pma/2016-10-22-intro %}), I meanderingly outlined what many in the political sphere feel is a major problem afflicting contemporary American politics. Namely, that there is a dangerous interplay between a deeply polarized electorate and the similarly splintered media it consumes. Facts are subordinate to the ideological narrative. I hope that examining the texts produced by the media will reify these claims.
 
 Since then, we've elected someone whose campaign was fueled by deeply partisan, conspiratorial rhetoric. While many forces contributed to this great rise, many have pointed to an electorate that inhabits universes predicated on incompatible sets of truths. In particular, the media has reached a fever pitch with respect to the issue of fake news stories Facebook. However, I would like to focus on what I believe is the more widespread issue of heavily opinionated - although more factually substantiated - news sources. For one, Buzzfeed News has classified many of these nominally objective sources as nonetheless promoting fake stories (19% of the time for left-leaning sources, 38% of the time on the right). Furthermore, I believe that these sources contribute in a far more profound way to the split in our national consciousness. 
 
@@ -22,7 +22,7 @@ The rest of this post consists of the steps I took to collect these articles, an
 
 I've created a Python package called [newsarchives](http://github.com/ahoho/news-archives) to collect articles[^4]. It contains two components: 
 * a 'crawler' that relies on the [Facebook Graph API](https://developers.facebook.com/docs/graph-api) to collect links from past posts from each page feed, saving them to a database
-* an 'archiver' that resolves these links and extracts the text using the terrific [newspaper](http://github.com/XXXXXX) package.
+* an 'archiver' that resolves these links and extracts the text using the terrific [newspaper](https://github.com/codelucas/newspaper/) package.
 
 First, we'll import the list of sites and go through their post history. 
 
@@ -329,7 +329,7 @@ query = """
         ALTER TABLE articles
         ADD COLUMN num_words int;
         UPDATE articles
-        SET num_words = array_length(regexp_split_to_array(trim(article_text), E'\\\W+'), 1);          
+        SET num_words = array_length(regexp_split_to_array(trim(article_text), E'\\\W+'), 1);
         """
 crawler.sql_engine.execute(query)
 ```
@@ -343,10 +343,10 @@ word_hist = word_counts['num_words'].hist(bins='auto', range = [0, 2500])
 word_hist = word_hist.set(xlabel="Words", ylabel="Articles")
 ```
 
-{% include output_24_0.png %}
+![Plot]({{ site.url }}/assets/output_24_0.png)
 
 
-[^1]: Note that I'm being somewhat misleading in explicitly declaring these sources as partisan: "alignment is not a measure of media slant; rather, it captures differences in the kind of content shared among a set of [self-identified] partisans, which can include topic matter, framing, and slant."
+[^1]: Note that I'm being somewhat misleading in explicitly declaring these sources as partisan: "alignment is not a measure of media slant; rather, it captures differences in the kind of content shared among a set of self-identified partisans, which can include topic matter, framing, and slant."
 
 [^2]: -2 being "very liberal", +2 "very conservative".
 
