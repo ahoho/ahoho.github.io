@@ -1,0 +1,355 @@
+---
+layout: post
+title:  "Alternate Realities: Article Collection"
+date:   2016-11-10 20:01:00 -0500
+categories: partisan media analysis
+---
+### Sourcing our Data
+
+#### [ Work in Progress]
+
+In my [last post]({% post_url pma/2016-10-22-intro %}), I meanderingly outlined what many in the political sphere feel is a major problem afflicting contemporary American politics. Namely, that there is a dangerous interplay between a deeply polarized electorate and the similarly splintered media it consumes. Facts are subordinate to the ideological narrative. I hope that examining the texts produced by the media will reify these claims.
+
+Since then, we've elected someone whose campaign was fueled by deeply partisan, conspiratorial rhetoric. While many forces contributed to this great rise, many have pointed to an electorate that inhabits universes predicated on incompatible sets of truths. In particular, the media has reached a fever pitch with respect to the issue of fake news stories Facebook. However, I would like to focus on what I believe is the more widespread issue of heavily opinionated - although more factually substantiated - news sources. For one, Buzzfeed News has classified many of these nominally objective sources as nonetheless promoting fake stories (19% of the time for left-leaning sources, 38% of the time on the right). Furthermore, I believe that these sources contribute in a far more profound way to the split in our national consciousness. 
+
+To this end, I've decided to crawl through a selection of partisan news sources, as identified by the Facebook study ["Exposure to ideologically diverse news and opinion on Facebook"](http://doi.org/10.1126/science.aaa1160)[^1] and the Wall Street Journal's related [Blue Feed, Red Feed](http://graphics.wsj.com/blue-feed-red-feed/) project. The dataset is located [here](https://github.com/jonkeegan/blue-feed-red-feed-sources); the authors have coded sources based on where on their readership self-identifies on the political spectrum[^2]. The dataset is limited to pages with over 100,000 followers, where at least half the site's links fell into the 'very conservative' or 'very liberal' categories during the study period. You can read more about the methodology [here](http://graphics.wsj.com/blue-feed-red-feed/#methodology).
+
+Since most websites don't have a unified trove of past articles, I use the post history from each outlet's Facebook page feed. While this choice limits us to articles posted on Facebook, I feel that what we may lose in coverage is made up for in ease of collection.
+
+The rest of this post consists of the steps I took to collect these articles, and is relatively technical. I'll summarize the results, alongside the text processing that took place, in a future post.
+
+### Collecting past Facebook Posts
+
+I've created a Python package called [newsarchives](http://github.com/ahoho/news-archives) to collect articles[^4]. It contains two components: 
+* a 'crawler' that relies on the [Facebook Graph API](https://developers.facebook.com/docs/graph-api) to collect links from past posts from each page feed, saving them to a database
+* an 'archiver' that resolves these links and extracts the text using the terrific [newspaper](http://github.com/XXXXXX) package.
+
+First, we'll import the list of sites and go through their post history. 
+
+
+```python
+import pandas as pd
+
+from newsarchives.crawler import FBGraphCrawler
+from newsarchives.archiver import NewsArchiver
+
+page_data = pd.read_csv('./input/included_sources.csv',
+                        dtype={'fb_id': str}).drop_duplicates()
+```
+
+We'll want to remove some of these pages because they're either paywalled, not primarily political, associated with a political figure rather than a website, or otherwise inappropriate for our ends[^4]. I also included Alex Jones' InfoWars a, which I felt was a glaring omission.
+
+
+```python
+excluded_pages = ['Boing Boing',
+                  'Herman Cain',
+                  'Senator Ted Cruz',
+                  'FiveThirtyEight',
+                  'Gawker',
+                  'Republican National Committee',
+                  'Jezebel',
+                  'MSNBC',
+                  'National Republican Congressional Committee',
+                  'Rolling Stone',
+                  'U.S. Senator Bernie Sanders',
+                  'The Daily Show',
+                  'Upworthy',
+                  'Vox']
+page_data = page_data[~page_data.name.isin(excluded_pages)]
+
+# turn dataframe into dict
+page_data.link = page_data.link.replace('https://www.facebook.com/|/', '', regex=True)
+pages = page_data.set_index('link')['fb_id'].to_dict()
+pages.update({'infowars':'80256732576'})
+```
+
+I'm using a locally-run instance of a postgreSQL database to store the results, but anything other than SQLite will work.
+
+Note that we require an access token in order to query the Facebook API. Lucky for us, it's free.
+
+
+```python
+access_token = '{}|{}'.format(app_id, app_secret)
+sql_url = 'postgres://postgres:postgres@localhost/articles'
+crawler = FBGraphCrawler(access_token, sql_url, pages)
+```
+
+For the time being, I've decided to trawl articles dating back to the arguable beginning of the 2016 election cycle: Trump's announcement of his candidacy in June 2015. The below process takes a while, but we can speed it up using `multiprocessing` and leave it running on a remote instance.
+
+
+```python
+crawler.save_all_page_feeds(through_date = '2015-06-01')
+```
+
+Let's take a look at what our results look like!
+
+
+```python
+pd.read_sql("SELECT * FROM fb_posts LIMIT 4", crawler.sql_engine, index_col='post_id')
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>post_id</th>
+      <th>base_url</th>
+      <th>created_time</th>
+      <th>link</th>
+      <th>shares</th>
+      <th>page_id</th>
+      <th>page_name</th>
+      <th>retrieved_on</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>282024895179874_844179798964378</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T16:36:31+0000</td>
+      <td>http://freebeacon.com/issues/south-carolina-go...</td>
+      <td>131.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844171362298555</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T16:07:38+0000</td>
+      <td>http://freebeacon.com/national-security/suspec...</td>
+      <td>28.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844161375632887</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T15:44:15+0000</td>
+      <td>http://freebeacon.com/national-security/inside...</td>
+      <td>280.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844132088969149</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T14:04:06+0000</td>
+      <td>http://freebeacon.com/national-security/manhun...</td>
+      <td>6.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+### Scraping Article Content
+We want to do a little cleanup before moving to article scraping. We're going to
+
+ * Remove duplicate urls, choosing the post with the most shares
+ * Only scrape articles from posts where the source is the same as that of the posting page (e.g., we don't want *Washington Post* articles shared by *Mic*). We do that by just looking at those posts from base urls that constitute, cumulatively, the top 75% of articles.
+
+
+```python
+# remove duplicate urls
+query = """
+        DELETE FROM fb_posts
+        WHERE post_id IN (SELECT post_id
+              FROM (SELECT post_id,
+                             ROW_NUMBER() OVER (partition BY url ORDER BY shares DESC) AS rnum
+                     FROM fb_posts_20161012) t
+              WHERE t.rnum > 1);
+        """
+crawler.sql_engine.execute(query)
+
+# only keep base urls most associated with each post
+query = """
+        SELECT page_id, base_url
+        FROM (SELECT page_id,
+                     base_url,
+                     count(*) as page_url_posts,
+                     SUM(COUNT(*)) OVER (PARTITION BY page_id) as page_posts
+              FROM fb_posts
+              GROUP BY page_id, base_url) post_summary
+        WHERE page_url_posts / page_posts > 0.75
+        """
+sites = pd.read_sql(query, crawler.sql_engine, index_col = 'page_id')\
+          .to_dict()['base_url']
+```
+
+Now we can scrape these URLs. The `newspaper` package (which, for the record, is Python 3 only) allows this process to be run in parallel. In order to avoid rate-limiting, we only use two threads per source. To avoid storing all articles in memory while maximizing the number of simultaneous sources we can scrape, we pull from SQL in chunks that each contain a uniform distributions of sources. I note about 1GB of memory use per 1000 articles. 
+
+In case it wasn't obvious, this takes a long time -- about 5 days on my computer (although there were some pauses to correct errors in the interim). I eventually switched to Google Compute Engine for the text processing (as outlined in the next post), which I imagine would have processed it a lot faster. The bottlenecks lie as much in the downloading of the HTML as they do in parsing it to extract text content.
+
+
+```python
+archiver = NewsArchiver(sql_url, sites)
+archiver.get_articles(chunksize=10000, threads_per_source=2)
+```
+
+### Summarizing our  Data
+
+Let's take a look at some summary statistics for the collected data.
+
+
+```python
+query = """
+        SELECT base_url, regexp_replace(post_id, '_[0-9]+$', '') as fb_id, count(*) as num_posts
+        FROM articles
+        GROUP BY base_url, regexp_replace(post_id, '_[0-9]+$', '')
+        ORDER BY COUNT(*) DESC
+        """
+post_summary = pd.read_sql(query, crawler.sql_engine)
+```
+
+    535642 total posts
+    
+
+##### Number of Posts by Source Alignment
+
+
+```python
+pd.merge(post_summary, page_data, on='fb_id')[['side', 'num_posts']]\
+  .groupby('side')\
+  .sum()\
+  .set_value('total', 'num_posts', post_summary.num_posts.sum())
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>side</th>
+      <th>num_posts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left</th>
+      <td>222676.0</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>326300.0</td>
+    </tr>
+    <tr>
+      <th>total</th>
+      <td>535642.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+##### Top 10 Pages by Number of Posts
+
+
+```python
+post_summary.set_index('base_url')[:10]
+```
+
+
+
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>base_url</th>
+      <th>num_posts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>slate.com</th>
+      <td>19631</td>
+    </tr>
+    <tr>
+      <th>dailycaller.com</th>
+      <td>18866</td>
+    </tr>
+    <tr>
+      <th>washingtonexaminer.com</th>
+      <td>16229</td>
+    </tr>
+    <tr>
+      <th>breitbart.com</th>
+      <td>15433</td>
+    </tr>
+    <tr>
+      <th>conservativetribune.com</th>
+      <td>13427</td>
+    </tr>
+    <tr>
+      <th>teaparty.org</th>
+      <td>13166</td>
+    </tr>
+    <tr>
+      <th>madworldnews.com</th>
+      <td>12840</td>
+    </tr>
+    <tr>
+      <th>bizpacreview.com</th>
+      <td>12349</td>
+    </tr>
+    <tr>
+      <th>westernjournalism.com</th>
+      <td>11226</td>
+    </tr>
+    <tr>
+      <th>americanthinker.com</th>
+      <td>10890</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
+##### Words in Posts
+
+
+```python
+# Save a new column with word counts
+# this is time consuming
+query = """
+        ALTER TABLE articles
+        ADD COLUMN num_words int;
+        UPDATE articles
+        SET num_words = array_length(regexp_split_to_array(trim(article_text), E'\\\W+'), 1);          
+        """
+crawler.sql_engine.execute(query)
+```
+
+
+```python
+%matplotlib inline
+import matplotlib.pyplot as plt
+word_counts = pd.read_sql("SELECT num_words FROM articles", crawler.sql_engine)
+word_hist = word_counts['num_words'].hist(bins='auto', range = [0, 2500])
+word_hist = word_hist.set(xlabel="Words", ylabel="Articles")
+```
+
+{% include output_24_0.png %}
+
+
+[^1]: Note that I'm being somewhat misleading in explicitly declaring these sources as partisan: "alignment is not a measure of media slant; rather, it captures differences in the kind of content shared among a set of [self-identified] partisans, which can include topic matter, framing, and slant."
+
+[^2]: -2 being "very liberal", +2 "very conservative".
+
+[^3]: The package uses object oriented programming to model what is basically a procedural task, which is not great form. However, I intend to refactor the codebase so that it is extensible and reusable for other applications.
+
+[^4]: Should we desire articles from some of these excluded sources, we can eventually follow the methodology of the Facebook study and screen out "hard" stories from "soft" ones.
