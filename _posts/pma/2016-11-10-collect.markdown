@@ -165,7 +165,7 @@ query = """
         DELETE FROM fb_posts
         WHERE post_id IN (SELECT post_id
               FROM (SELECT post_id,
-                             ROW_NUMBER() OVER (partition BY url ORDER BY shares DESC) AS rnum
+                             ROW_NUMBER() OVER (partition BY link ORDER BY shares DESC) AS rnum
                      FROM fb_posts_20161012) t
               WHERE t.rnum > 1);
         """
@@ -182,8 +182,7 @@ query = """
               GROUP BY page_id, base_url) post_summary
         WHERE page_url_posts / page_posts > 0.75
         """
-sites = pd.read_sql(query, crawler.sql_engine, index_col = 'page_id')\
-          .to_dict()['base_url']
+sites = pd.read_sql(query, crawler.sql_engine)
 ```
 
 Now we can scrape these URLs. The `newspaper` package (which, for the record, is Python 3 only) allows this process to be run in parallel. In order to avoid rate-limiting, we only use two threads per source. To avoid storing all articles in memory while maximizing the number of simultaneous sources we can scrape, we pull from SQL in chunks that each contain a uniform distributions of sources. I note about 1GB of memory use per 1000 articles. 
