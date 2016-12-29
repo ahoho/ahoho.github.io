@@ -2,7 +2,7 @@
 layout: post
 title:  "Alternate Realities: Introduction"
 date:   2016-10-22 18:33:00 -0500
-categories: [partisan, media, analysis]
+categories: [partisan media analysis]
 ---
 
 ## Assessing U.S. Partisan Media Sources through the Lens of the 2016 Election Cycle
