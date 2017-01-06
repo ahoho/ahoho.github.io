@@ -71,7 +71,7 @@ src_stream = SourceNGramStream(sqldb=sql_url, query=query,
 ### Building a document-term matrix
 Now we can create a document-term matrix, where each source represents a document and our columns will be the n-grams from earlier.
 
-Impoortantly, we're going to limit ourselves to tokens and n-grams that appear in two or more sources. I believe this choice enables us to consider these sources as a network, where there might be patterns of mututal influence on rhetoric and thinking. We don't really care about one-off uses of a particular word or phrase. (It also has the nice side-effect of getting rid of a lot of junk phrases).
+Importantly, we're going to limit ourselves to tokens and n-grams that appear in two or more sources. I believe this choice enables us to consider these sources as a network, where there might be patterns of mutual influence on rhetoric and thinking. We don't really care about one-off uses of a particular word or phrase. (It also has the nice side-effect of getting rid of a lot of junk phrases).
 
 
 ```python
@@ -97,7 +97,7 @@ with open('../intermediate/vec_source_phrasegram.pkl', 'wb') as vecf:
 io.mmwrite('../intermediate/dtm_source_phrasegram.mtx',  dtm_source)
 ```
 
-Despite having limited ourselves to only n-grams that appear in more than one source, there are still some phrases that muddy up the waters unecessarily (like 'washington examiner news desk'). As a result, we'll remove those that appear in only one source over 95% of the time.
+Despite having limited ourselves to only n-grams that appear in more than one source, there are still some phrases that muddy up the waters necessarily (like 'washington examiner news desk'). As a result, we'll remove those that appear in only one source over 95% of the time.
 
 
 ```python
@@ -207,16 +207,16 @@ $$ \sum_{t=1}^n \frac{tf_{t, r}}{tf_{t, r} + tf_{t, l}} $$
 
 This constitutes a measure of term partisanship, the distribution of which is displayed below.
 
-<img src="{{ site.url }}/assets/term_alignment_dist.png" width="700">
+<img src="{{ site.url }}/assets/term_alignment_dist.png" width="800">
 
-With that established, we can take a look at the top terms on each side, as ranked by tf-idf. The size and color of these n-grams corrseponds to the above measure. Since many terms appear on both the left and right, I've also created a filtered version of the data where we only look at terms with a partisanship measure greater than 1 standard deviation beyond the mean (per the chart above).
+With that established, we can take a look at the top terms on each side, as ranked by tf-idf. The size and color of these n-grams corresponds to the above measure. Since many terms appear on both the left and right, I've also created a filtered version of the data where we only look at terms with a partisanship measure greater than 1 standard deviation beyond the mean (per the chart above).
 
 While this is only an exploratory look at the data, I think we're starting to see some interesting results (despite the obvious junk). *islamic_state* features more heavily on the right than on the left, for example.
 
-If I had to make an initial and wholly speculative interpretation, I'd say that these data support the idea that hyperpartisan news sources focus on threats to their respective ideologies and values, rather than establishing them from first principles (or, if they are engaging in a constructive mode, it is in a negative sense: "we're against" rather than "we're for"). I guess this is unsurprising, but I think we now have some hard evidence corroborating what we already knew (such is the bane of [positivist disciplines](https://tni-back-soon.github.io/essays/podcast-out/), apparently).
+If I had to make an initial and wholly speculative interpretation, I'd say that these data support the idea that hyperpartisan news sources focus on threats to their respective ideologies and values, rather than establishing them from first principles (or, if they are constructive, it is in a negative sense: "we're against" rather than "we're for"). I guess this is unsurprising, but I think we now have some hard evidence corroborating what we already knew (such is the bane of [positivist disciplines](https://tni-back-soon.github.io/essays/podcast-out/), apparently).
 
 But just look: the left talks about *gun_violence* and the right *gun_control*. Conservative media focuses on *illegal_immigrants*, *syrian_refuges*, *sharia_law*, and *islamic_terrorism*. The left is concerned with the *religious_right*, *white_supremacist*, and *wall_street*. To be sure, the left media does have terms aligned with values and reform, like *mass_incarceration*, *climate_change*, and *human_rights* (as well as *lgbt_rights*). 
 
-But it's also my bias that I view *climate_change* as non-reactionary. Using sentiment analysis is a reasonable future step.
+But it's also my bias that I view *climate_change* as non-reactionary. What *is* patently clear is the substantial difference in the topics covered and promoted on each side.
 
 {% include term_viz.html %}
