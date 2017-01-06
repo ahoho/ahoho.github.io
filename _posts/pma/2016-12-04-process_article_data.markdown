@@ -1,10 +1,9 @@
 ---
 layout: post
 title:  "Alternate Realities: Article Processing"
-date:   2016-12-04 20:01:00 -0500
+date:   2016-12-30 20:01:00 -0500
 categories: partisan media analysis
 ---
-
 ## Text Processing
 ### [In progress]
 In a previous post, we collected roughly 500,000 articles from 80 left- and right-aligned online news sources, going back to July 2015. Here, we'll start to clean and process the text data to enable future analyses.
@@ -132,18 +131,27 @@ bigram = Phrases(imap(lambda x: x[1], stream), **phrase_kwargs)
 trigram = Phrases(bigram[imap(lambda x: x[1], stream)], **phrase_kwargs)
 quadgram = Phrases(trigram[imap(lambda x: x[1], stream)], **phrase_kwargs)
 
-phraser = Phraser(quadgram)
-phraser.save('../intermediate/phraser_all.pkl')
+bigram = Phraser(bigram)
+trigram = Phraser(trigram)
+quadgram = Phraser(quadgram)
+
+bigram.save('../intermediate/phraser_bigram_all.pkl')
+trigram.save('../intermediate/phraser_trigram_all.pkl')
+quadgram.save('../intermediate/phraser_quadgram_all.pkl')
 ```
 
+    /home/ahoyle/anaconda2/envs/py27/lib/python2.7/site-packages/gensim/models/phrases.py:248: UserWarning: For a faster implementation, use the gensim.models.phrases.Phraser class
+      warnings.warn("For a faster implementation, use the gensim.models.phrases.Phraser class")
+
+
 ### Trimming n-grams
-Many of the n-grams we found have stopwords at either the end or beginning, for instance, 'the supreme court'. We'd like to trim these so that they are individually meaningful components.
+Many of the n-grams we found have stopwords at either the end or beginning, for instance, 'the supreme court', or 'to the'. We'd like to trim these so that they are individually meaningful components.
 
 
 ```python
 from nltk.corpus import stopwords
 from collections import defaultdict
-from pickle import cPickle
+from itertools import chain
 
 def trim_phrases(phraser):
     """
@@ -157,17 +165,21 @@ def trim_phrases(phraser):
         
         idx = [i for i, v in enumerate(ngram) if v not in stop]  
         ngram = ngram[idx[0]:idx[-1] + 1] if idx else []
-        
-        
+                
         if len(ngram) > 1:
             ngrams[tuple(ngram)] = score
                         
     return ngrams
-  
-ngrams = trim_phrases(phraser)
 
+ngrams = {k: v for k, v in chain(trim_phrases(quadgram).items(),
+                                 trim_phrases(trigram).items(),
+                                 trim_phrases(bigram).items())}
+```
+
+
+```python
 with open('../intermediate/phrasegrams_all.pkl', 'wb') as o:
-    pickle.save(ngrams, o)
+    pickle.dump(ngrams, o)
 ```
 
 We can now use these phrases, which include n-grams like "united_states" to "bragging_about_sexual_assault", to join together tokens in the data and see which ones are particularly prevalent. Before we get to that, we'll filter down the set to include only noun phrases using POS tagging, which will be used with Word2Vec and topic modeling down the road.
@@ -177,15 +189,11 @@ Of the n-grams collected above, we're largely interested in noun-phrases like 'a
 
 
 ```python
-import cPickle as pickle
-sql_url = 'postgres://postgres:**PASSWORD**@localhost/articles'
 full_query = """
              SELECT post_id, article_text
              FROM articles
              WHERE num_words > 100
              """
-with open('../intermediate/phrasegrams_all.pkl', 'rb') as i:
-    ngrams = pickle.load(i)
 ```
 
 
@@ -203,10 +211,10 @@ class POSSentenceStream(SentenceStream):
                 if '_' in word:
                     yield word, pos
             
-pos_words = POSSentenceStream(sqldb=sql_url, query=full_query, ngrams=ngrams)
+pos_words = POSSentenceStream(sqldb=sql_url, query=full_query, ngrams=ngrams.keys())
 ```
 
-To take a look at what I'm referring to, see some examples below. Just look: already we have the hugely loaded term *conversion_therapy*!
+To take a look at what I'm referring to, see some examples below. Just look: already we have the hugely controversial term *conversion_therapy*!
 
 
 ```python
@@ -270,10 +278,17 @@ pos_counts = count_ngram_occurances(pos_words)
 noun_ngrams = identify_np_ngrams(pos_counts)
 ```
 
-Already, we're seeing some moderately interesting findings in the data. For instance, *rigged election by hillary clinton* appears 113 times in 57 sources, *congress must investigate planned parenthood* 58 times over 16 sources. For posterity, I've saved these n-grams and their counts to github.
+
+```python
+with open('../intermediate/pos_counts_all.pkl', 'wb') as o:
+    pickle.dump(pos_counts, o)
+```
+
+Already, we're seeing some moderately interesting findings in the data. For instance, *rigged election by hillary clinton* appears 113 times in 57 sources, *congress must investigate planned parenthood* 58 times over 16 sources. For posterity, I've saved these n-grams and their counts to [github](https://github.com/ahoho/partisan-media-analysis/blob/master/output/dtm_source_counts.csv).
 
 
 ```python
+import pandas as pd
 # save n-grams appearing over 25 times in the data
 ngram_data = pd.DataFrame.from_records(pos_counts)\
                          .transpose()
