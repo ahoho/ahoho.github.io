@@ -13,6 +13,8 @@ In this post, we're going to engage in a preliminary and fairly rudimentary anal
 
 This analysis will also set us up for topic modeling (out of fashion as it may be) since we'll just be building a large document-term matrix. I also hope to use it on weekly cuts of the data to see how emphasis in coverage changed over the election cycle.
 
+This ended up being a little more technical than I anticipated, so if you're just looking for results you can skip down <a href='#visualizing-the-data'>to the end</a>.
+
 ### Reading the Data
 First, we want to collect the data at the level of each source, which will require us to subclass the `SentenceStream` generator we built in the last post. `CountVectorizer` from `scikit-learn` treats each element in an iterator as a document, so we'll restructure the generator such that all words from each source are combined into one list of strings.
 
