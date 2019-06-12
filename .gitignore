@@ -5,3 +5,7 @@ _site
 .ipynb_checkpoints
 Thumbs.db
 _site
+.DS_store
+.ruby-version
+Gemfile.lock
+
