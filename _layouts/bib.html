@@ -11,7 +11,11 @@
 
 <div id="{{entry.key}}">
   {% if entry.type == "thesis" %}
-    {{reference}}
+    <span class="title">{{entry.title}}</span>
+    <span class="author"><em>
+      {{entry.author_array[0].first}} {{entry.author_array[0].last}}
+    </em></span>
+    <em>{{entry.school}}</em>, {{entry.thesis_type}}. {{entry.year}}
   {% else %}
     <span class="title">{{entry.title}}</span>
     <span class="author">
@@ -48,11 +52,11 @@
       {% endfor %}
     </span>
 
-    <span class="periodical">
+    <span class="periodical">    
     {% if entry.type == "article" %}
-      <em>{{entry.journal}}</em>
+      <em>{{entry.journal}}.</em>
     {% elsif entry.type == "inproceedings" %}
-      <em>In {{entry.booktitle}}</em>
+      <em>In {{entry.booktitle}}.</em>
     {% endif %}
     {% if entry.year %}
       {{entry.year}}
