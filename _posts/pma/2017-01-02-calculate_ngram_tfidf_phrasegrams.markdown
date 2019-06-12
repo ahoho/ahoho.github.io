@@ -209,7 +209,7 @@ $$ \sum_{t=1}^n \frac{tf_{t, r}}{tf_{t, r} + tf_{t, l}} $$
 
 This constitutes a measure of term partisanship, the distribution of which is displayed below.
 
-<img src="{{ site.url }}/assets/term_alignment_dist.png" width="800">
+<img src="{{ site.url }}/assets/img/term_alignment_dist.png" width="800">
 
 With that established, we can take a look at the top terms on each side, as ranked by tf-idf. The size and color of these n-grams corresponds to the above measure. Since many terms appear on both the left and right, I've also created a filtered version of the data where we only look at terms with a partisanship measure greater than 1 standard deviation beyond the mean (per the chart above).
 

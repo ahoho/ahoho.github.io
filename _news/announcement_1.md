@@ -1,7 +1,7 @@
 ---
 layout: post
-date: 2015-10-22 15:59:00-0400
+date: 2019-05-16 10:00:00-0400
 inline: true
 ---
 
-A simple inline announcement.
+Happy to announce that I will be joining the University of Maryland as a PhD in computer science in the fall!

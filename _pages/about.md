@@ -1,8 +1,8 @@
 ---
 layout: about
 permalink: /
-title: <strong>Alexander</strong> Hoyle
-description: <a href="">Affiliations</a>. Address. Contacts. Moto. Etc.
+title: <strong>Alexander</strong> Miserlis Hoyle
+description:
 
 profile:
   align: right
@@ -17,4 +17,4 @@ I am an incoming PhD candidate in computer science at the University of Maryland
 
 For my master's thesis, I constructed models to determine when a factual claim requires an external citation for support, using Wikipedia data. What makes this interesting is that it requires identifying the "beats" that constitute a given concept (e.g., although made up of several sentences, the following only requires a single citation: "[Ferdinand de Saussure](https://en.wikipedia.org/wiki/Ferdinand_de_Saussure) was born in Geneva in 1857. His father was Henri Louis Frédéric de Saussure, a mineralogist, entomologist, and taxonomist. Saussure showed signs of considerable talent and intellectual ability as early as the age of fourteen.") 
 
-You can reach me at [{{ site.email }}](mailto:{{ site.email | encode_email }}).
+You can reach me at [{{ site.text_email }}](mailto:{{ site.true_email | encode_email }}).

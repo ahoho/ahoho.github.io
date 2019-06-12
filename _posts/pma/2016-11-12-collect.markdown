@@ -342,7 +342,7 @@ word_hist = word_counts['num_words'].hist(bins='auto', range = [0, 2500])
 word_hist = word_hist.set(xlabel="Words", ylabel="Articles")
 ```
 
-![Plot]({{ site.url }}/assets/output_24_0.png)
+![Plot]({{ site.url }}/assets/img/output_24_0.png)
 
 
 [^1]: Note that I'm being somewhat misleading in explicitly declaring these sources as partisan: "alignment is not a measure of media slant; rather, it captures differences in the kind of content shared among a set of self-identified partisans, which can include topic matter, framing, and slant."
