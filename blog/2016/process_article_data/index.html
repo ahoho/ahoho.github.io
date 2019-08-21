@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Alexander M Hoyle | Alternate Realities: Article Processing</title>
+  <meta name="description" content="I am Alexander.
+">
+
+  <link rel="shortcut icon" href="/assets/img/favicon.ico">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="canonical" href="/blog/2016/process_article_data/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    
+    <span class="site-title">
+        
+        <strong>Alexander</strong> Hoyle
+    </span>
+    
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+      <div class="trigger">
+        <!-- About -->
+        <a class="page-link" href="/">About</a>
+
+        <!-- Blog -->
+        <!-- <a class="page-link" href="/blog/">Blog</a> -->
+
+        <!-- Pages -->
+        
+          
+        
+          
+        
+          
+        
+          
+            <a class="page-link" href="/publications/">Publications</a>
+          
+        
+          
+        
+
+        <!-- CV link -->
+        <a class="page-link" href="/assets/pdf/cv.pdf">CV</a>
+
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Alternate Realities: Article Processing</h1>
+    <p class="post-meta">December 30, 2016</p>
+  </header>
+
+  <article class="post-content">
+    <h2 id="text-processing">Text Processing</h2>
+<h3 id="in-progress">[In progress]</h3>
+<p>In a previous post, we collected roughly 500,000 articles from 80 left- and right-aligned online news sources, going back to July 2015. Here, we’ll start to clean and process the text data to enable future analyses.</p>
+
+<p>This is sort of an iterative problem – I’ll likely be revising this process to account for noise that makes it through. This is another post heavy on mechanics and light on findings, but the next one will have some interesting results.</p>
+
+<p>First, we’ll develop a means of accessing text from the database by building an extensible generator. Then, we’ll stream sentences to find commonly occuring n-grams in the data, and finally we’ll pick those n-grams that we want to treat as single words in the future.</p>
+
+<p>We’ll rely on a combination of <a href="http://www.nltk.org/">nltk</a>, <a href="https://radimrehurek.com/gensim/index.html">gensim</a>, and <a href="http://scikit-learn.org/stable/index.html">scikit-learn’s</a> to tokenize our documents, generate n-grams, do some POS tagging, and place the data in a term-document-matrix.</p>
+
+<h3 id="streaming-tokenized-text">Streaming tokenized text</h3>
+
+<p>To start, we’ll create a generator to return all articles from a query. We’ll be using similar functionality throughout this process, so I’ve opted to make it a class so that we may inherit from it in the future and stream, for e.g., sentences for use in Word2Vec models.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
+
+<span class="k">class</span> <span class="nc">QueryStream</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="s">""" 
+    Stream documents from the articles database
+    Can be subclassed to stream words or sentences from each document
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sqldb</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">idcol</span><span class="o">=</span><span class="s">'post_id'</span><span class="p">,</span> 
+                 <span class="n">textcol</span><span class="o">=</span><span class="s">'article_text'</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">sqldb</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="n">query</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span> <span class="o">=</span> <span class="n">chunksize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">textcol</span> <span class="o">=</span> <span class="n">textcol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idcol</span> <span class="o">=</span> <span class="n">idcol</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">""" Iterate through each row in the query """</span>
+        <span class="n">query_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">result_set</span> <span class="o">=</span> <span class="n">query_results</span><span class="o">.</span><span class="n">fetchmany</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">result_set</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">result_set</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">row</span>
+            <span class="n">result_set</span> <span class="o">=</span> <span class="n">query_results</span><span class="o">.</span><span class="n">fetchmany</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We want to create a pipeline for tokenizing documents that will split a document into sentences, then those sentences into words. Here, we’ll use nltk for tokenization.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">sent_tokenize</span><span class="p">,</span> <span class="n">word_tokenize</span>
+<span class="kn">from</span> <span class="nn">nltk.tokenize</span> <span class="kn">import</span> <span class="n">MWETokenizer</span>
+
+<span class="kn">import</span> <span class="nn">regex</span> <span class="k">as</span> <span class="n">re</span>
+
+<span class="k">class</span> <span class="nc">SentenceStream</span><span class="p">(</span><span class="n">QueryStream</span><span class="p">):</span>
+    <span class="s">"""
+    Stream tokenized sentences from a query
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngrams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SentenceStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c"># this will allow us to treat pre-defined n-grams as</span>
+        <span class="c"># a single word, e.g., 'hillary_clinton', once</span>
+        <span class="c"># we've identified them</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mwe</span> <span class="o">=</span> <span class="n">MWETokenizer</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SentenceStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+        <span class="c"># remove all punctuation, except hyphens</span>
+        <span class="n">punct</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="nb">compile</span><span class="p">(</span><span class="s">"[^A-Za-z0-9</span><span class="err">\</span><span class="s">-]"</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">idcol</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">textcol</span><span class="p">)</span>
+            
+            <span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sent_tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+                <span class="n">split_sentence</span> <span class="o">=</span> <span class="p">[</span><span class="n">punct</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">''</span><span class="p">,</span> <span class="n">word</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                                  <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_tokenize</span><span class="p">(</span><span class="n">sentence</span><span class="p">)]</span>
+                <span class="k">yield</span> <span class="nb">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mwe</span><span class="o">.</span><span class="n">tokenize</span><span class="p">([</span><span class="n">word</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">split_sentence</span> 
+                                             <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'-'</span><span class="p">,</span> <span class="s">''</span><span class="p">)])</span>
+</code></pre></div></div>
+
+<h3 id="identifying-collocations">Identifying Collocations</h3>
+
+<p>We’ll use the article text we’ve scraped to identify n-grams like ‘donald trump’. Should we deem it necessary, we can later identify synonyms like ‘senator sanders’ and ‘bernie sanders’ using Word2Vec.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">gensim.models.phrases</span> <span class="kn">import</span> <span class="n">Phrases</span><span class="p">,</span> <span class="n">Phraser</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">imap</span> 
+
+<span class="n">sql_url</span> <span class="o">=</span> <span class="s">'postgres://postgres:**PASSWORD**@localhost/articles'</span>
+
+<span class="n">full_query</span> <span class="o">=</span> <span class="s">"""
+             SELECT post_id, article_text
+             FROM articles
+             WHERE num_words &gt; 100
+             """</span>
+
+<span class="c"># Since I'm running this on a Google Compute instance, I can afford</span>
+<span class="c"># to load everything in memory as a list. While this isn't strictly necessary,</span>
+<span class="c"># I can now avoid pulling from the database multiple times</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">SentenceStream</span><span class="p">(</span><span class="n">sqldb</span><span class="o">=</span><span class="n">sql_url</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">full_query</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>To illustrate, here’s the 9th sentence in the data.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">stream</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[(u'144317282271701_1045074145529339',
+  [u'a', u'mixture', u'of', u'motives', u'is', u'on', u'display'])]
+</code></pre></div></div>
+
+<p>We must iteratively generate collocations from the sentence stream. The bigram object contains things like ‘marco rubio’, the trigram might now include ‘senator marco rubio’. I imagine this can be improved down the line but for now it’s sufficient.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">phrase_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s">'threshold'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                  <span class="s">'min_count'</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+
+<span class="n">bigram</span> <span class="o">=</span> <span class="n">Phrases</span><span class="p">(</span><span class="n">imap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stream</span><span class="p">),</span> <span class="o">**</span><span class="n">phrase_kwargs</span><span class="p">)</span>
+<span class="n">trigram</span> <span class="o">=</span> <span class="n">Phrases</span><span class="p">(</span><span class="n">bigram</span><span class="p">[</span><span class="n">imap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stream</span><span class="p">)],</span> <span class="o">**</span><span class="n">phrase_kwargs</span><span class="p">)</span>
+<span class="n">quadgram</span> <span class="o">=</span> <span class="n">Phrases</span><span class="p">(</span><span class="n">trigram</span><span class="p">[</span><span class="n">imap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">stream</span><span class="p">)],</span> <span class="o">**</span><span class="n">phrase_kwargs</span><span class="p">)</span>
+
+<span class="n">bigram</span> <span class="o">=</span> <span class="n">Phraser</span><span class="p">(</span><span class="n">bigram</span><span class="p">)</span>
+<span class="n">trigram</span> <span class="o">=</span> <span class="n">Phraser</span><span class="p">(</span><span class="n">trigram</span><span class="p">)</span>
+<span class="n">quadgram</span> <span class="o">=</span> <span class="n">Phraser</span><span class="p">(</span><span class="n">quadgram</span><span class="p">)</span>
+
+<span class="n">bigram</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">'../intermediate/phraser_bigram_all.pkl'</span><span class="p">)</span>
+<span class="n">trigram</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">'../intermediate/phraser_trigram_all.pkl'</span><span class="p">)</span>
+<span class="n">quadgram</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">'../intermediate/phraser_quadgram_all.pkl'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/home/ahoyle/anaconda2/envs/py27/lib/python2.7/site-packages/gensim/models/phrases.py:248: UserWarning: For a faster implementation, use the gensim.models.phrases.Phraser class
+  warnings.warn("For a faster implementation, use the gensim.models.phrases.Phraser class")
+</code></pre></div></div>
+
+<h3 id="trimming-n-grams">Trimming n-grams</h3>
+<p>Many of the n-grams we found have stopwords at either the end or beginning, for instance, ‘the supreme court’, or ‘to the’. We’d like to trim these so that they are individually meaningful components.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="k">def</span> <span class="nf">trim_phrases</span><span class="p">(</span><span class="n">phraser</span><span class="p">):</span>
+    <span class="s">"""
+    Remove stopwords at the start and end of an ngram,
+    generate list of unique ngrams in corpus
+    """</span>
+    <span class="n">stop</span> <span class="o">=</span> <span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s">'english'</span><span class="p">)</span>
+    <span class="n">ngrams</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">tuple</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">bigram</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">phraser</span><span class="o">.</span><span class="n">phrasegrams</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ngram</span> <span class="o">=</span> <span class="n">bigram</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'_'</span><span class="p">)</span> <span class="o">+</span> <span class="n">bigram</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'_'</span><span class="p">)</span>
+        
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ngram</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stop</span><span class="p">]</span>  
+        <span class="n">ngram</span> <span class="o">=</span> <span class="n">ngram</span><span class="p">[</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">idx</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">idx</span> <span class="k">else</span> <span class="p">[]</span>
+                
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ngram</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ngrams</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ngram</span><span class="p">)]</span> <span class="o">=</span> <span class="n">score</span>
+                        
+    <span class="k">return</span> <span class="n">ngrams</span>
+
+<span class="n">ngrams</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">trim_phrases</span><span class="p">(</span><span class="n">quadgram</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                 <span class="n">trim_phrases</span><span class="p">(</span><span class="n">trigram</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                                 <span class="n">trim_phrases</span><span class="p">(</span><span class="n">bigram</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">())}</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'../intermediate/phrasegrams_all.pkl'</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">o</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">ngrams</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We can now use these phrases, which include n-grams like “united_states” to “bragging_about_sexual_assault”, to join together tokens in the data and see which ones are particularly prevalent. Before we get to that, we’ll filter down the set to include only noun phrases using POS tagging, which will be used with Word2Vec and topic modeling down the road.</p>
+
+<h3 id="pos-tagging">POS Tagging</h3>
+<p>Of the n-grams collected above, we’re largely interested in noun-phrases like ‘aborted_baby_parts’ (appearing 1,062 times: uh, ok) rather than adjective or verb phrases like ‘radical_islamic’. To subset to only nouns, we’ll use <a href="http://www.nltk.org/book/ch05.html">Part-of-Speech tagging</a> to see how these n-grams are employed in the data.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">full_query</span> <span class="o">=</span> <span class="s">"""
+             SELECT post_id, article_text
+             FROM articles
+             WHERE num_words &gt; 100
+             """</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">pos_tag</span>
+
+<span class="k">class</span> <span class="nc">POSSentenceStream</span><span class="p">(</span><span class="n">SentenceStream</span><span class="p">):</span>
+    <span class="s">"""
+    Assign parts of speech to n-grams
+    """</span>
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sentences</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">POSSentenceStream</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__iter__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">sentences</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pos_tag</span><span class="p">(</span><span class="n">sentence</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s">'_'</span> <span class="ow">in</span> <span class="n">word</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">word</span><span class="p">,</span> <span class="n">pos</span>
+            
+<span class="n">pos_words</span> <span class="o">=</span> <span class="n">POSSentenceStream</span><span class="p">(</span><span class="n">sqldb</span><span class="o">=</span><span class="n">sql_url</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">full_query</span><span class="p">,</span> <span class="n">ngrams</span><span class="o">=</span><span class="n">ngrams</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>To take a look at what I’m referring to, see some examples below. Just look: already we have the hugely controversial term <em>conversion_therapy</em>!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pos_words</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[(u'hasnt_stopped', 'VBD'),
+ (u'republican_politicians', 'NNS'),
+ (u'radio_show', 'NN'),
+ (u'rafael_cruz', 'VBD'),
+ (u'ted_cruz', 'NN'),
+ (u'barack_obama', 'NN'),
+ (u'conversion_therapy', 'NN'),
+ (u'reminds_us', 'NN'),
+ (u'conversion_therapy', 'NN'),
+ (u'sharp_contrast', 'NN')]
+</code></pre></div></div>
+
+<p>We might expect that certain n-grams, like ‘presidential_candidate’, could be considered both a noun or adjective phrase. As a result, we’ll determine the POS distribution for each phrase, selecting only those that are nouns over 75% of the time.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">count_ngram_occurances</span><span class="p">(</span><span class="n">pos_stream</span><span class="p">):</span>
+    <span class="s">"""
+    Tally up the different POS associated with each n-gram
+    """</span>
+    <span class="n">pos_counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">word</span><span class="p">:</span> <span class="n">Counter</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pos_stream</span><span class="p">}</span>
+    
+    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">pos</span> <span class="ow">in</span> <span class="n">pos_stream</span><span class="p">:</span>
+        <span class="n">pos_counts</span><span class="p">[</span><span class="n">word</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">pos</span><span class="p">])</span>
+        
+    <span class="k">return</span> <span class="n">pos_counts</span>
+
+<span class="k">def</span> <span class="nf">identify_np_ngrams</span><span class="p">(</span><span class="n">pos_counts</span><span class="p">):</span>
+    <span class="s">"""
+    Determine the n-grams that are most often employed as noun phrases
+    """</span>     
+    <span class="n">np_ngrams</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">counts</span> <span class="ow">in</span> <span class="n">pos_counts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">split_word</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">word</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'_'</span><span class="p">))</span>
+                
+        <span class="n">word_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>        
+        <span class="n">noun_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="s">'NN'</span> <span class="ow">in</span> <span class="n">k</span><span class="p">])</span>
+        
+        <span class="c"># is it usually used as a noun?</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">true_divide</span><span class="p">(</span><span class="n">noun_count</span><span class="p">,</span> <span class="n">word_count</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.75</span><span class="p">:</span>
+            <span class="n">np_ngrams</span><span class="p">[</span><span class="n">split_word</span><span class="p">]</span> <span class="o">=</span> <span class="n">word_count</span>
+            
+    <span class="k">return</span> <span class="n">np_ngrams</span>
+            
+<span class="n">pos_counts</span> <span class="o">=</span> <span class="n">count_ngram_occurances</span><span class="p">(</span><span class="n">pos_words</span><span class="p">)</span>  
+<span class="n">noun_ngrams</span> <span class="o">=</span> <span class="n">identify_np_ngrams</span><span class="p">(</span><span class="n">pos_counts</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'../intermediate/pos_counts_all.pkl'</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">o</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pos_counts</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Already, we’re seeing some moderately interesting findings in the data. For instance, <em>rigged election by hillary clinton</em> appears 113 times in 57 sources, <em>congress must investigate planned parenthood</em> 58 times over 16 sources. For posterity, I’ve saved these n-grams and their counts to <a href="https://github.com/ahoho/partisan-media-analysis/blob/master/output/dtm_source_counts.csv">github</a>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="c"># save n-grams appearing over 25 times in the data</span>
+<span class="n">ngram_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">pos_counts</span><span class="p">)</span>\
+                         <span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+    
+<span class="n">ngram_data</span><span class="p">[</span><span class="s">'total'</span><span class="p">]</span> <span class="o">=</span> <span class="n">ngram_data</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ngram_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ngram_data</span><span class="o">.</span><span class="n">total</span> <span class="o">&gt;=</span> <span class="mi">25</span><span class="p">]</span>\
+          <span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">'../output/ngram_pos_counts.csv'</span><span class="p">,</span> <span class="n">index_label</span><span class="o">=</span><span class="s">'n-gram'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">'../intermediate/noun_ngrams_all.pkl'</span><span class="p">,</span> <span class="s">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">o</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">noun_ngrams</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>With that, we’re done with this initial stage of processing. I imagine that I’ll be expanding this post as time goes on to accomodate other issues that arise (already, I’m aware that there’s a lot of noise in the data, to the tune of “follow breitbart on Twitter” or “photo credit AP”, but I’d rather get some results first).</p>
+
+  </article>
+
+  
+
+</div>
+
+      </div>
+    </div>
+
+    <footer>
+
+  <div class="wrapper">
+    &copy; Copyright 2019 Alexander M Hoyle.
+    
+    
+  </div>
+
+</footer>
+
+
+    <!-- Load jQuery -->
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<!-- Load Common JS -->
+<script src="/assets/js/common.js"></script>
+
+
+<!-- Load KaTeX -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js"></script>
+<script src="/assets/js/katex.js"></script>
+
+
+
+
+<!-- Include custom icon fonts -->
+<link rel="stylesheet" href="/assets/css/fontawesome-all.min.css">
+<link rel="stylesheet" href="/assets/css/academicons.min.css">
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-XXXXXXXXX', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+  </body>
+
+</html>
