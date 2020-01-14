@@ -1,7 +1,16 @@
 ---
-layout: page
-title: About
-permalink: /about/
+layout: about
+permalink: /
+title: <strong>Alexander</strong> Miserlis Hoyle
+description:
+
+profile:
+  align: right
+  image: prof_pic.jpg
+  address:
+
+news: true
+social: true
 ---
 
 I am a PhD student working at the University of Maryland's [Computational Linguistics and Information Processing](https://wiki.umiacs.umd.edu/clip/index.php/Main_Page) lab, where I am advised by [Philip Resnik](http://users.umiacs.umd.edu/~resnik/).
