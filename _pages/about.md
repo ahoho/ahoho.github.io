@@ -17,4 +17,4 @@ I am a PhD student working at the University of Maryland's [Computational Lingui
 
 Previously, I completed my master's in computational statistics and machine learning at University College London, where my thesis advisors were [Sebastian Riedel](http://www.riedelcastro.org) and [Jeff Mitchell](http://www.bris.ac.uk/expsych/people/jeffrey-j-mitchell/overview.html) at the UCL NLP group. Before my return to academia, I was an economic consultant at The Brattle Group in Cambridge, Massachusetts, where I developed an internal document retrieval platform, built econometric models, and did a lot of work that could be broadly classified as data science (I remain an avid evangelist of R’s tidyverse over python’s pandas).
 
-You can reach me at [{{ site.email }}](mailto:{{ site.email }}).
+You can reach me at [{{ site.text_email }}](mailto:{{ site.true_email | encode_email }}).
