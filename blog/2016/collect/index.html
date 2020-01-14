@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Alexander M Hoyle | Alternate Realities: Article Collection</title>
+  <meta name="description" content="I am Alexander.
+">
+
+  <link rel="shortcut icon" href="/assets/img/favicon.ico">
+
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <link rel="canonical" href="/blog/2016/collect/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    
+    <span class="site-title">
+        
+        <strong>Alexander</strong> Hoyle
+    </span>
+    
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+      <div class="trigger">
+        <!-- About -->
+        <a class="page-link" href="/">About</a>
+
+        <!-- Blog -->
+        <!-- <a class="page-link" href="/blog/">Blog</a> -->
+
+        <!-- Pages -->
+        
+          
+        
+          
+        
+          
+        
+          
+            <a class="page-link" href="/publications/">Publications</a>
+          
+        
+          
+        
+
+        <!-- CV link -->
+        <a class="page-link" href="/assets/pdf/cv.pdf">CV</a>
+
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Alternate Realities: Article Collection</h1>
+    <p class="post-meta">November 12, 2016</p>
+  </header>
+
+  <article class="post-content">
+    <h3 id="sourcing-our-data">Sourcing our Data</h3>
+
+<h4 id="-work-in-progress">[ Work in Progress]</h4>
+
+<p>In my <a href="/blog/2016/intro/">last post</a>, I meanderingly outlined what many in the political sphere feel is a major problem afflicting contemporary American politics. Namely, that there is a dangerous interplay between a deeply polarized electorate and the similarly splintered media it consumes. Facts are subordinate to the ideological narrative. I hope that examining the texts produced by the media will reify these claims.</p>
+
+<p>Since then, we’ve elected someone whose campaign was fueled by deeply partisan, conspiratorial rhetoric. While many forces contributed to this great rise, many have pointed to an electorate that inhabits universes predicated on incompatible sets of truths. In particular, the media has reached a fever pitch with respect to the issue of fake news stories Facebook. However, I would like to focus on what I believe is the more widespread issue of heavily opinionated - although more factually substantiated - news sources. For one, Buzzfeed News has classified many of these nominally objective sources as nonetheless promoting fake stories (19% of the time for left-leaning sources, 38% of the time on the right). Furthermore, I believe that these sources contribute in a far more profound way to the split in our national consciousness.</p>
+
+<p>To this end, I’ve decided to crawl through a selection of partisan news sources, as identified by the Facebook study <a href="http://doi.org/10.1126/science.aaa1160">“Exposure to ideologically diverse news and opinion on Facebook”</a><sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup> and the Wall Street Journal’s related <a href="http://graphics.wsj.com/blue-feed-red-feed/">Blue Feed, Red Feed</a> project. The dataset is located <a href="https://github.com/jonkeegan/blue-feed-red-feed-sources">here</a>; the authors have coded sources based on where on their readership self-identifies on the political spectrum<sup id="fnref:2"><a href="#fn:2" class="footnote">2</a></sup>. The dataset is limited to pages with over 100,000 followers, where at least half the site’s links fell into the ‘very conservative’ or ‘very liberal’ categories during the study period. You can read more about the methodology <a href="http://graphics.wsj.com/blue-feed-red-feed/#methodology">here</a>.</p>
+
+<p>Since most websites don’t have a unified trove of past articles, I use the post history from each outlet’s Facebook page feed. While this choice limits us to articles posted on Facebook, I feel that what we may lose in coverage is made up for in ease of collection.</p>
+
+<p>The rest of this post consists of the steps I took to collect these articles, and is relatively technical. I’ll summarize the results, alongside the text processing that took place, in a future post.</p>
+
+<h3 id="collecting-past-facebook-posts">Collecting past Facebook Posts</h3>
+
+<p>I’ve created a Python package called <a href="http://github.com/ahoho/news-archives">newsarchives</a> to collect articles<sup id="fnref:4"><a href="#fn:4" class="footnote">3</a></sup>. It contains two components:</p>
+<ul>
+  <li>a ‘crawler’ that relies on the <a href="https://developers.facebook.com/docs/graph-api">Facebook Graph API</a> to collect links from past posts from each page feed, saving them to a database</li>
+  <li>an ‘archiver’ that resolves these links and extracts the text using the terrific <a href="https://github.com/codelucas/newspaper/">newspaper</a> package.</li>
+</ul>
+
+<p>First, we’ll import the list of sites and go through their post history.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+
+<span class="kn">from</span> <span class="nn">newsarchives.crawler</span> <span class="kn">import</span> <span class="n">FBGraphCrawler</span>
+<span class="kn">from</span> <span class="nn">newsarchives.archiver</span> <span class="kn">import</span> <span class="n">NewsArchiver</span>
+
+<span class="n">page_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'./input/included_sources.csv'</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s">'fb_id'</span><span class="p">:</span> <span class="nb">str</span><span class="p">})</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>We’ll want to remove some of these pages because they’re either paywalled, not primarily political, associated with a political figure rather than a website, or otherwise inappropriate for our ends<sup id="fnref:4:1"><a href="#fn:4" class="footnote">3</a></sup>. I also included Alex Jones’ InfoWars a, which I felt was a glaring omission.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">excluded_pages</span> <span class="o">=</span> <span class="p">[</span><span class="s">'Boing Boing'</span><span class="p">,</span>
+                  <span class="s">'Herman Cain'</span><span class="p">,</span>
+                  <span class="s">'Senator Ted Cruz'</span><span class="p">,</span>
+                  <span class="s">'FiveThirtyEight'</span><span class="p">,</span>
+                  <span class="s">'Gawker'</span><span class="p">,</span>
+                  <span class="s">'Republican National Committee'</span><span class="p">,</span>
+                  <span class="s">'Jezebel'</span><span class="p">,</span>
+                  <span class="s">'MSNBC'</span><span class="p">,</span>
+                  <span class="s">'National Republican Congressional Committee'</span><span class="p">,</span>
+                  <span class="s">'Rolling Stone'</span><span class="p">,</span>
+                  <span class="s">'U.S. Senator Bernie Sanders'</span><span class="p">,</span>
+                  <span class="s">'The Daily Show'</span><span class="p">,</span>
+                  <span class="s">'Upworthy'</span><span class="p">,</span>
+                  <span class="s">'Vox'</span><span class="p">]</span>
+<span class="n">page_data</span> <span class="o">=</span> <span class="n">page_data</span><span class="p">[</span><span class="o">~</span><span class="n">page_data</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">excluded_pages</span><span class="p">)]</span>
+
+<span class="c"># turn dataframe into dict</span>
+<span class="n">page_data</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">page_data</span><span class="o">.</span><span class="n">link</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">'https://www.facebook.com/|/'</span><span class="p">,</span> <span class="s">''</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">pages</span> <span class="o">=</span> <span class="n">page_data</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">'link'</span><span class="p">)[</span><span class="s">'fb_id'</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="n">pages</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s">'infowars'</span><span class="p">:</span><span class="s">'80256732576'</span><span class="p">})</span>
+</code></pre></div></div>
+
+<p>I’m using a locally-run instance of a postgreSQL database to store the results, but anything other than SQLite will work.</p>
+
+<p>Note that we require an access token in order to query the Facebook API. Lucky for us, it’s free.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">access_token</span> <span class="o">=</span> <span class="s">'{}|{}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">app_secret</span><span class="p">)</span>
+<span class="n">sql_url</span> <span class="o">=</span> <span class="s">'postgres://postgres:postgres@localhost/articles'</span>
+<span class="n">crawler</span> <span class="o">=</span> <span class="n">FBGraphCrawler</span><span class="p">(</span><span class="n">access_token</span><span class="p">,</span> <span class="n">sql_url</span><span class="p">,</span> <span class="n">pages</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For the time being, I’ve decided to trawl articles dating back to the arguable beginning of the 2016 election cycle: Trump’s announcement of his candidacy in June 2015. The below process takes a while, but we can speed it up using <code class="highlighter-rouge">multiprocessing</code> and leave it running on a remote instance.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">crawler</span><span class="o">.</span><span class="n">save_all_page_feeds</span><span class="p">(</span><span class="n">through_date</span> <span class="o">=</span> <span class="s">'2015-06-01'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s take a look at what our results look like!</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s">"SELECT * FROM fb_posts LIMIT 4"</span><span class="p">,</span> <span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s">'post_id'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>post_id</th>
+      <th>base_url</th>
+      <th>created_time</th>
+      <th>link</th>
+      <th>shares</th>
+      <th>page_id</th>
+      <th>page_name</th>
+      <th>retrieved_on</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>282024895179874_844179798964378</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T16:36:31+0000</td>
+      <td>http://freebeacon.com/issues/south-carolina-go...</td>
+      <td>131.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844171362298555</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T16:07:38+0000</td>
+      <td>http://freebeacon.com/national-security/suspec...</td>
+      <td>28.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844161375632887</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T15:44:15+0000</td>
+      <td>http://freebeacon.com/national-security/inside...</td>
+      <td>280.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+    <tr>
+      <th>282024895179874_844132088969149</th>
+      <td>freebeacon.com</td>
+      <td>2015-06-18T14:04:06+0000</td>
+      <td>http://freebeacon.com/national-security/manhun...</td>
+      <td>6.0</td>
+      <td>282024895179874</td>
+      <td>FreeBeacon</td>
+      <td>Fri Oct 21 08:59:35 2016</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3 id="scraping-article-content">Scraping Article Content</h3>
+<p>We want to do a little cleanup before moving to article scraping. We’re going to</p>
+
+<ul>
+  <li>Remove duplicate urls, choosing the post with the most shares</li>
+  <li>Only scrape articles from posts where the source is the same as that of the posting page (e.g., we don’t want <em>Washington Post</em> articles shared by <em>Mic</em>). We do that by just looking at those posts from base urls that constitute, cumulatively, the top 75% of articles.</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># remove duplicate urls</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s">"""
+        DELETE FROM fb_posts
+        WHERE post_id IN (SELECT post_id
+              FROM (SELECT post_id,
+                             ROW_NUMBER() OVER (partition BY link ORDER BY shares DESC) AS rnum
+                     FROM fb_posts_20161012) t
+              WHERE t.rnum &gt; 1);
+        """</span>
+<span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+<span class="c"># only keep base urls most associated with each post</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s">"""
+        SELECT page_id, base_url
+        FROM (SELECT page_id,
+                     base_url,
+                     count(*) as page_url_posts,
+                     SUM(COUNT(*)) OVER (PARTITION BY page_id) as page_posts
+              FROM fb_posts
+              GROUP BY page_id, base_url) post_summary
+        WHERE page_url_posts / page_posts &gt; 0.75
+        """</span>
+<span class="n">sites</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Now we can scrape these URLs. The <code class="highlighter-rouge">newspaper</code> package (which, for the record, is Python 3 only) allows this process to be run in parallel. In order to avoid rate-limiting, we only use two threads per source. To avoid storing all articles in memory while maximizing the number of simultaneous sources we can scrape, we pull from SQL in chunks that each contain a uniform distributions of sources. I note about 1GB of memory use per 1000 articles.</p>
+
+<p>In case it wasn’t obvious, this takes a long time – about 5 days on my computer (although there were some pauses to correct errors in the interim). I eventually switched to Google Compute Engine for the text processing (as outlined in the next post), which I imagine would have processed it a lot faster. The bottlenecks lie as much in the downloading of the HTML as they do in parsing it to extract text content.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">archiver</span> <span class="o">=</span> <span class="n">NewsArchiver</span><span class="p">(</span><span class="n">sql_url</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+<span class="n">archiver</span><span class="o">.</span><span class="n">get_articles</span><span class="p">(</span><span class="n">chunksize</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">threads_per_source</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="summarizing-our--data">Summarizing our  Data</h3>
+
+<p>Let’s take a look at some summary statistics for the collected data.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query</span> <span class="o">=</span> <span class="s">"""
+        SELECT base_url, regexp_replace(post_id, '_[0-9]+$', '') as fb_id, count(*) as num_posts
+        FROM articles
+        GROUP BY base_url, regexp_replace(post_id, '_[0-9]+$', '')
+        ORDER BY COUNT(*) DESC
+        """</span>
+<span class="n">post_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>535642 total posts
+</code></pre></div></div>
+
+<h5 id="number-of-posts-by-source-alignment">Number of Posts by Source Alignment</h5>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">post_summary</span><span class="p">,</span> <span class="n">page_data</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s">'fb_id'</span><span class="p">)[[</span><span class="s">'side'</span><span class="p">,</span> <span class="s">'num_posts'</span><span class="p">]]</span>\
+  <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">'side'</span><span class="p">)</span>\
+  <span class="o">.</span><span class="nb">sum</span><span class="p">()</span>\
+  <span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="s">'total'</span><span class="p">,</span> <span class="s">'num_posts'</span><span class="p">,</span> <span class="n">post_summary</span><span class="o">.</span><span class="n">num_posts</span><span class="o">.</span><span class="nb">sum</span><span class="p">())</span>
+</code></pre></div></div>
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>side</th>
+      <th>num_posts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>left</th>
+      <td>222676.0</td>
+    </tr>
+    <tr>
+      <th>right</th>
+      <td>326300.0</td>
+    </tr>
+    <tr>
+      <th>total</th>
+      <td>535642.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h5 id="top-10-pages-by-number-of-posts">Top 10 Pages by Number of Posts</h5>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">post_summary</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">'base_url'</span><span class="p">)[:</span><span class="mi">10</span><span class="p">]</span>
+</code></pre></div></div>
+
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>base_url</th>
+      <th>num_posts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>slate.com</th>
+      <td>19631</td>
+    </tr>
+    <tr>
+      <th>dailycaller.com</th>
+      <td>18866</td>
+    </tr>
+    <tr>
+      <th>washingtonexaminer.com</th>
+      <td>16229</td>
+    </tr>
+    <tr>
+      <th>breitbart.com</th>
+      <td>15433</td>
+    </tr>
+    <tr>
+      <th>conservativetribune.com</th>
+      <td>13427</td>
+    </tr>
+    <tr>
+      <th>teaparty.org</th>
+      <td>13166</td>
+    </tr>
+    <tr>
+      <th>madworldnews.com</th>
+      <td>12840</td>
+    </tr>
+    <tr>
+      <th>bizpacreview.com</th>
+      <td>12349</td>
+    </tr>
+    <tr>
+      <th>westernjournalism.com</th>
+      <td>11226</td>
+    </tr>
+    <tr>
+      <th>americanthinker.com</th>
+      <td>10890</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h5 id="words-in-posts">Words in Posts</h5>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Save a new column with word counts</span>
+<span class="c"># this is time consuming</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s">"""
+        ALTER TABLE articles
+        ADD COLUMN num_words int;
+        UPDATE articles
+        SET num_words = array_length(regexp_split_to_array(trim(article_text), E'</span><span class="se">\\</span><span class="err">\</span><span class="s">W+'), 1);
+        """</span>
+<span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">word_counts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s">"SELECT num_words FROM articles"</span><span class="p">,</span> <span class="n">crawler</span><span class="o">.</span><span class="n">sql_engine</span><span class="p">)</span>
+<span class="n">word_hist</span> <span class="o">=</span> <span class="n">word_counts</span><span class="p">[</span><span class="s">'num_words'</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="s">'auto'</span><span class="p">,</span> <span class="nb">range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2500</span><span class="p">])</span>
+<span class="n">word_hist</span> <span class="o">=</span> <span class="n">word_hist</span><span class="o">.</span><span class="nb">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s">"Words"</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">"Articles"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="/assets/img/output_24_0.png" alt="Plot" /></p>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>Note that I’m being somewhat misleading in explicitly declaring these sources as partisan: “alignment is not a measure of media slant; rather, it captures differences in the kind of content shared among a set of self-identified partisans, which can include topic matter, framing, and slant.” <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:2">
+      <p>-2 being “very liberal”, +2 “very conservative”. <a href="#fnref:2" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:4">
+      <p>Should we desire articles from some of these excluded sources, we can eventually follow the methodology of the Facebook study and screen out “hard” stories from “soft” ones. <a href="#fnref:4" class="reversefootnote">&#8617;</a> <a href="#fnref:4:1" class="reversefootnote">&#8617;<sup>2</sup></a></p>
+    </li>
+  </ol>
+</div>
+
+  </article>
+
+  
+
+</div>
+
+      </div>
+    </div>
+
+    <footer>
+
+  <div class="wrapper">
+    &copy; Copyright 2020 Alexander M Hoyle.
+    
+    
+  </div>
+
+</footer>
+
+
+    <!-- Load jQuery -->
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<!-- Load Common JS -->
+<script src="/assets/js/common.js"></script>
+
+
+<!-- Load KaTeX -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js"></script>
+<script src="/assets/js/katex.js"></script>
+
+
+
+
+<!-- Include custom icon fonts -->
+<link rel="stylesheet" href="/assets/css/fontawesome-all.min.css">
+<link rel="stylesheet" href="/assets/css/academicons.min.css">
+
+<!-- Google Analytics -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-XXXXXXXXX', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+  </body>
+
+</html>
