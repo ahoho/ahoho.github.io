@@ -2,8 +2,8 @@
 # Site settings
 # -----------------------------------------------------------------------------
 name: Alexander M Hoyle
-text_email: hoyle [at] umd
-true_email: hoyle@umd.edu
+text_email: hoyle [at] umd [dot] edu
+true_email: hoyle@umd.edu/''
 description: > # this means to ignore newlines until "url:"
   I am Alexander.
 footer_text: > # Keep empty
