@@ -71,6 +71,9 @@
   {% if entry.arxiv %}
     [<a href="http://arxiv.org/abs/{{ entry.arxiv }}" target="_blank">arXiv</a>]
   {% endif %}
+  {% if entry.url %}
+  [<a href="{{ entry.url }}" target="_blank">Link</a>]
+  {% endif %}
   {% if entry.html %}
     [<a href="{{ entry.html }}" target="_blank">HTML</a>]
   {% endif %}
@@ -85,6 +88,9 @@
   {% endif %}
   {% if entry.slides %}
     [<a href="{{ entry.slides | prepend: '/assets/pdf/' | prepend: site.baseurl | prepend: site.url }}" target="_blank">Slides</a>]
+  {% endif %}
+  {% if entry.video %}
+  [<a href="{{ entry.video }}" target="_blank">Video</a>]
   {% endif %}
   {% if entry.code %}
     [<a href="{{ entry.code }}" target="_blank">Code</a>]
