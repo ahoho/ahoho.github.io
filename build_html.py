@@ -37,5 +37,5 @@ if __name__ == "__main__":
         publications=publications,
         last_name="Hoyle",
     )
-    with open("main.html", "w") as outfile:
+    with open("index.html", "w") as outfile:
         outfile.write(content)
