@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block publications %}
+<h2>Publications</h2>
+{% for year in publications %}
+    <h3>{{ year }}</h3>
+    <ul>
+    {% for entry in publications[year] %}
+    <li>
+        <span class="title">{{entry.title}}<br></span>
+        <span class="author">
+            {% for author in entry.author_list %}
+                {%- if author.last == last_name -%}
+                    <b>{{ author.first }} {{ author.last }}</b>
+                {%- else -%}
+                    {{ author.first }} {{ author.last }}
+                {%- endif -%}
+                {%- if not loop.last -%}
+                    {%- if loop.revindex > 2 -%}
+                        {{ ', ' }}
+                    {%- else -%}
+                        {{ ' and ' }}
+                    {%- endif -%}
+                {%- else -%}
+                        .
+                {%- endif -%}
+            {% endfor %}
+        </span>
+        
+        <span class="periodical">
+          {% if entry.ENTRYTYPE == "article" %}
+            <em>{{entry.journal}}.</em>
+          {% elif entry.ENTRYTYPE == "inproceedings" %}
+            <em>In {{entry.booktitle}}.</em>
+          {% elif "thesis" in entry.ENTRYTYPE %}
+            <em>{{entry.school}}</em>, {{entry.thesis_type}}.</em>
+          {% endif %}
+          
+          {% if entry.year %}
+            {{entry.year}}
+          {% endif %}
+        </span>
+        <br>
+            <span class="links">
+            {% if entry.url %}
+                [<a href="{{ entry.url }}" target="_blank">Link</a>]
+            {% endif %}
+            {% if entry.html %}
+                [<a href="{{ entry.html }}" target="_blank">HTML</a>]
+            {% endif %}
+            {% if entry.pdf %}
+                [<a href="/assets/pdf/{{ entry.pdf }}" target="_blank">PDF</a>]
+            {% endif %}
+            {% if entry.poster %}
+                [<a href="/assets/pdf/{{ entry.poster }}" target="_blank">Poster</a>]
+            {% endif %}
+            {% if entry.slides %}
+                [<a href="/assets/pdf/{{ entry.slides }}" target="_blank">Slides</a>]
+            {% endif %}
+            {% if entry.video %}
+            [<a href="{{ entry.video }}" target="_blank">Video</a>]
+            {% endif %}
+            {% if entry.code %}
+                [<a href="{{ entry.code }}" target="_blank">Code</a>]
+            {% endif %}
+            <br>
+            {% if entry.abstract %}
+                <details>
+                    <summary>Abstract</summary>
+                    {{ entry.abstract }}
+                </details>
+            {% endif %}
+            </span>
+    </li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+
+{% endblock publications %}

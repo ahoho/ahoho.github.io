@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Alexander Hoyle's Homepage</title>
+    <link rel="shortcut icon" href="assets/img/favicon.ico">
+    <link rel="stylesheet" href="assets/css/simple.css">
+</head>
+<body>
+    <div class="container">
+        <div class="center">
+        <h1>Alexander Miserlis Hoyle</h1>
+        </div>
+    </div>
+    <div class="container">
+        {% block links %}
+        <ul class="links">
+            <li><a href="/assets/pdf/cv.pdf" target="_blank">[Academic CV]</a></li>
+            <li><a href="mailto:%68%6F%79%6C%65@%75%6D%64.%65%64%75/''">[Email]</a></li>
+            <li><a href="https://scholar.google.com/citations?user=NpK0IXgAAAAJ">[Google Scholar]</a></li>
+            <li><a href="https://www.semanticscholar.org/author/Alexander-Miserlis-Hoyle/49462969">[Semantic Scholar]</a></li>
+            <li><a href="https://github.com/ahoho">[Github]</a></li>
+            <li><a href="https://twitter.com/miserlis_">[Twitter]</a></li>
+        </ul>
+        {% endblock links %}
+        </div>
+    <hr>
+
+    <div class="container">
+        {% block about %}
+        <div class="about">
+        <p><img class="prof-pic" alt="Profile picture" src="assets/img/prof_pic.jpg">
+        I'm a fourth-year PhD student working at the University of Maryland's <a href="https://wiki.umiacs.umd.edu/clip/index.php/Main_Page">Computational Linguistics and Information Processing</a> lab, where I'm advised by <a href="http://users.umiacs.umd.edu/~resnik/">Philip Resnik</a>.</p>
+        
+        <p>My research is oriented around the development and evaluation of methods for computational social science. My basic contention is that the field of NLP is well-served served by grounding it in the needs of social science&mdash;giving direction to concepts like interpretability and generalization. On the methods side, I'm interested in identifying latent constructs (perhaps call it "very abstractive summarization"): topic models, ideal points models, NLG for annotation. In terms of evaluation, I like to think about validity: are we really measuring what we want to measure? Topically, I'm drawn to work on bias &amp; fairness and political science.</p>
+
+        <p>This past summer I was an intern in the <a href="https://www.microsoft.com/en-us/research/theme/fate-montreal/">FATE group at Microsoft Research</a>. In the past I have interned with <a href="https://allenai.org/allennlp">AllenNLP at AI2</a>. Previously, I completed my master's in computational statistics and machine learning at University College London, where my thesis advisors were <a href="http://www.riedelcastro.org">Sebastian Riedel</a> and <a href="http://www.bris.ac.uk/expsych/people/jeffrey-j-mitchell/overview.html">Jeff Mitchell</a> at the <a href="https://nlp.cs.ucl.ac.uk/">UCL NLP</a> group.</p>
+            
+        <p>After undergrad, I was a Research Analyst at The Brattle Group in Cambridge, Massachusetts, where I built econometric models, developed a document retrieval platform, and did additional work that could be classified as data science. In a key project, I helped conduct research on New York City public housing for the U.S. Department of Justice; these efforts eventually led to a <a href="https://nypost.com/2018/06/11/city-settles-for-more-than-2b-with-nycha-over-horrendous-living-conditions/">$2.2 billion settlement</a> to improve conditions.</p>
+
+        <p>You can reach me at <a href="mailto:%68%6F%79%6C%65@%75%6D%64.%65%64%75/''">hoyle [at] umd [dot] edu</a>. I use masculine pronouns.</p>
+        </div>
+        {% endblock about %}
+    </div>
+    <div class="container">
+    {% block publications %}
+    {% endblock publications %}
+    </div>
+
+    <div class = "container">
+        <h2>Service, Interests</h2>
+        <ul>
+            <li>I'm involved in graduate labor advocacy and organizing. I chair the Data and Research group of the Graduate Assistant Advisory Committee; I've testified on behalf of graduate assistants before the Maryland state legislature.</li>
+            <li>I've participated in Científico Latino's <a href="https://www.cientificolatino.com/gsmi">Graduate Student Mentorship Initiative</a> for two application cycles. Mentees have been accepted to the residency program at Meta AI and USC. If you are applying to schools, please reach out and I will be happy to read your materials.</li>
+            <li>In my spare time, I like to read, run, cycle, and socialize.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
