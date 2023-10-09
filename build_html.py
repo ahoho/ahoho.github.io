@@ -1,28 +1,28 @@
 from itertools import groupby
 
 import jinja2
-from bibtexparser.bparser import BibTexParser
-from bibtexparser.customization import author, splitname
-
-def parse_authors(record):
-    record = author(record) 
-    if "author" in record:
-        record["author_list"] = []
-        for a in record["author"]:
-            record["author_list"].append({k: " ".join(v) for k, v in splitname(a).items()})
-    return record
+from bibtexparser import parse_file
+import bibtexparser.middlewares as m
 
 def parse_bibtex(infile):
-    parser = BibTexParser()
-    parser.customization = parse_authors
-    parser.common_strings = False
-    with open(infile) as infile:
-        bib_db = parser.parse_file(infile)
+    layers = [
+        m.SeparateCoAuthors(True), # Co-authors should be separated as list of strings
+        m.SplitNameParts(True) # Individual Names should be split into first, von, last, jr parts
+    ]
+    bib_db = parse_file(infile, append_middleware=layers)
 
     entries = sorted(bib_db.entries, key=lambda d: -int(d['year']))
-    publications = {
-        year: list(pubs) for year, pubs in groupby(entries, lambda d: d['year'])
-    }
+    publications = {}
+    # convert to dicts
+    for year, pubs in groupby(entries, lambda d: d['year']):
+        publications[year] = []
+        for p in pubs:
+            p = dict(p.items())
+            p["author_list"] = [
+                {"first": " ".join(auth.first), "last": " ".join(auth.last)}
+                for auth in p["author"]
+            ]
+            publications[year].append(p)
     return publications
 
 if __name__ == "__main__":
