@@ -34,7 +34,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'  # Here you can specify the version of Python you want
+          python-version: '3.12'  # Here you can specify the version of Python you want
 
       - name: Install dependencies
         run: |
@@ -44,6 +44,14 @@ jobs:
 
       - name: Run script
         run: python build_html.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "ahoho" // replace with your username
+          git config --global user.email "ahoyle@wesleyan.edu" // replace with your email
+          git add index.html
+          git commit -m "Updated index.html [github-actions]"
+          git push
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
