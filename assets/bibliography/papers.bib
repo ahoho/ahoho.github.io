@@ -73,24 +73,33 @@
       Boyd-Graber, Jordan and
       Resnik, Philip",
     booktitle = "NeurIPS (Spotlight Presentation)",
+    abstract = {Topic model evaluation, like evaluation of other unsupervised methods, can be contentious. However, the feld has coalesced around automated estimates of topic coherence, which rely on the frequency of word co-occurrences in a reference corpus. Contemporary neural topic models surpass classical ones according to these metrics. At the same time, topic model evaluation suffers from a validation gap: automated coherence, developed for classical models, has not been validated using human experimentation for neural models. In addition, a meta-analysis of topic modeling literature reveals a substantial standardization gap in automated topic modeling benchmarks. To address the validation gap, we compare automated coherence with the two most widely accepted human judgment tasks: topic rating and word intrusion. To address the standardization gap, we systematically evaluate a dominant classical model and two state-of-the-art neural models on two commonly used datasets. Automated evaluations declare a winning model when corresponding human evaluations do not, calling into question the validity of fully automatic evaluations independent of human judgments.},
     month = nov,
     year = "2021",
     url = "https://arxiv.org/abs/2107.02173",
 }
 
 @inproceedings{rodriguez-etal-2021-evaluation,
-    title = "Evaluation Examples are not Equally Informative: How should that change NLP Leaderboards?",
-    author = "Rodriguez, Pedro and
-      Barrow, Joe and
-      Hoyle, Alexander and 
-      Lalor, John P. and
-      Jia, Robin and
+    title = "Evaluation Examples are not Equally Informative: How should that change {NLP} Leaderboards?",
+    author = "Rodriguez, Pedro  and
+      Barrow, Joe  and
+      Hoyle, Alexander Miserlis  and
+      Lalor, John P.  and
+      Jia, Robin  and
       Boyd-Graber, Jordan",
+    editor = "Zong, Chengqing  and
+      Xia, Fei  and
+      Li, Wenjie  and
+      Navigli, Roberto",
     booktitle = "ACL",
+    month = aug,
     year = "2021",
-    month = apr,
+    address = "Online",
     publisher = "Association for Computational Linguistics",
     url = "https://aclanthology.org/2021.acl-long.346/",
+    doi = "10.18653/v1/2021.acl-long.346",
+    pages = "4486--4503",
+    abstract = "Leaderboards are widely used in NLP and push the field forward. While leaderboards are a straightforward ranking of NLP models, this simplicity can mask nuances in evaluation items (examples) and subjects (NLP models). Rather than replace leaderboards, we advocate a re-imagining so that they better highlight if and where progress is made. Building on educational testing, we create a Bayesian leaderboard model where latent subject skill and latent item difficulty predict correct responses. Using this model, we analyze the ranking reliability of leaderboards. Afterwards, we show the model can guide what to annotate, identify annotation errors, detect overfitting, and identify informative examples. We conclude with recommendations for future benchmark tasks."
 }
 
 @inproceedings{gaynor-etal-2021-walk,
@@ -107,55 +116,86 @@
 
 @inproceedings{hoyle-etal-2021-promoting,
     title = "Promoting Graph Awareness in Linearized Graph-to-Text Generation",
-    author = "Hoyle, Alexander and
-      Marasović, Ana  and
+    author = "Hoyle, Alexander Miserlis  and
+      Marasovi{\'c}, Ana  and
       Smith, Noah A.",
-    booktitle = "Findings of ACL",
+    editor = "Zong, Chengqing  and
+      Xia, Fei  and
+      Li, Wenjie  and
+      Navigli, Roberto",
+    booktitle = "Findings of NAACL",
+    month = aug,
     year = "2021",
-    month = jan,
+    address = "Online",
     publisher = "Association for Computational Linguistics",
     url = "https://aclanthology.org/2021.findings-acl.82/",
+    doi = "10.18653/v1/2021.findings-acl.82",
+    pages = "944--956"
 }
 
 @inproceedings{hoyle-etal-2022-neural,
     title = "Are Neural Topic Models Broken?",
-    author = "Hoyle, Alexander and
+    author = "Hoyle, Alexander Miserlis  and
+      Sarkar, Rupak  and
       Goel, Pranav  and
-      Sarkar, Rupak and
       Resnik, Philip",
+    editor = "Goldberg, Yoav  and
+      Kozareva, Zornitsa  and
+      Zhang, Yue",
     booktitle = "Findings of EMNLP",
+    month = dec,
     year = "2022",
+    address = "Abu Dhabi, United Arab Emirates",
     publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/2022.findings-emnlp.390",
+    url = "https://aclanthology.org/2022.findings-emnlp.390/",
+    doi = "10.18653/v1/2022.findings-emnlp.390",
+    pages = "5321--5344",
+    abstract = "Recently, the relationship between automated and human evaluation of topic models has been called into question. Method developers have staked the efficacy of new topic model variants on automated measures, and their failure to approximate human preferences places these models on uncertain ground. Moreover, existing evaluation paradigms are often divorced from real-world use.Motivated by content analysis as a dominant real-world use case for topic modeling, we analyze two related aspects of topic models that affect their effectiveness and trustworthiness in practice for that purpose: the stability of their estimates and the extent to which the model`s discovered categories align with human-determined categories in the data. We find that neural topic models fare worse in both respects compared to an established classical method. We take a step toward addressing both issues in tandem by demonstrating that a straightforward ensembling method can reliably outperform the members of the ensemble."
 }
 
 @inproceedings{hoyle-etal-2023-natural,
     title = "Natural Language Decompositions of Implicit Content Enable Better Text Representations",
-    author = "Hoyle, Alexander and
-      Sarkar, Rupak and
+    author = "Hoyle, Alexander  and
+      Sarkar, Rupak  and
       Goel, Pranav  and
       Resnik, Philip",
+    editor = "Bouamor, Houda  and
+      Pino, Juan  and
+      Bali, Kalika",
     booktitle = "EMNLP",
+    month = dec,
     year = "2023",
+    address = "Singapore",
     publisher = "Association for Computational Linguistics",
-    url = "https://arxiv.org/abs/2305.14583",
+    url = "https://aclanthology.org/2023.emnlp-main.815/",
+    doi = "10.18653/v1/2023.emnlp-main.815",
+    pages = "13188--13214",
+    abstract = "When people interpret text, they rely on inferences that go beyond the observed language itself. Inspired by this observation, we introduce a method for the analysis of text that takes implicitly communicated content explicitly into account. We use a large language model to produce sets of propositions that are inferentially related to the text that has been observed, then validate the plausibility of the generated content via human judgments. Incorporating these explicit representations of implicit content proves useful in multiple problem settings that involve the human interpretation of utterances: assessing the similarity of arguments, making sense of a body of opinion data, and modeling legislative behavior. Our results suggest that modeling the meanings behind observed language, rather than the literal text alone, is a valuable direction for NLP and particularly its applications to social science."
 }
 
 @inproceedings{stammbach-etal-2023-revisiting,
-    title = "Re-visiting Automated Topic Model Evaluation with Large Language Models",
-    author = "Stammbach, Dominik and
-      Zouhar, Vilém and
-      Hoyle, Alexander and
-      Sachan, Mrinmaya and
+    title = "Revisiting Automated Topic Model Evaluation with Large Language Models",
+    author = "Stammbach, Dominik  and
+      Zouhar, Vil{\'e}m  and
+      Hoyle, Alexander  and
+      Sachan, Mrinmaya  and
       Ash, Elliott",
+    editor = "Bouamor, Houda  and
+      Pino, Juan  and
+      Bali, Kalika",
     booktitle = "EMNLP",
+    month = dec,
     year = "2023",
+    address = "Singapore",
     publisher = "Association for Computational Linguistics",
-    url = "https://arxiv.org/abs/2305.12152",
+    url = "https://aclanthology.org/2023.emnlp-main.581/",
+    doi = "10.18653/v1/2023.emnlp-main.581",
+    pages = "9348--9357",
+    abstract = "Topic models help us make sense of large text collections. Automatically evaluating their output and determining the optimal number of topics are both longstanding challenges, with no effective automated solutions to date. This paper proposes using large language models (LLMs) for these tasks. We find that LLMs appropriately assess the resulting topics, correlating more strongly with human judgments than existing automated metrics. However, the setup of the evaluation task is crucial {---} LLMs perform better on coherence ratings of word sets than on intrustion detection. We find that LLMs can also assist us in guiding us towards a reasonable number of topics. In actual applications, topic models are typically used to answer a research question related to a collection of texts. We can incorporate this research question in the prompt to the LLM, which helps estimating the optimal number of topics."
 }
 
 @inproceedings{leto-etal-2024-first,
-    title = "A First Step towards Measuring Interdisciplinary Engagement in Scientific Publications: A Case Study on {NLP} + {CSS} Research",
+    title = "A First Step towards Measuring Interdisciplinary Engagement in Scientific Publications: A Case Study on NLP + CSS Research",
     author = "Leto, Alexandria  and
       Roy, Shamik  and
       Hoyle, Alexander  and
@@ -165,7 +205,7 @@
       Field, Anjalie  and
       Hovy, Dirk  and
       Keith, Katherine",
-    booktitle = "Proceedings of the Sixth Workshop on Natural Language Processing and Computational Social Science (NLP+CSS 2024)",
+    booktitle = "NLP+CSS Workshop",
     month = jun,
     year = "2024",
     address = "Mexico City, Mexico",
@@ -176,17 +216,29 @@
     abstract = "With the rise in the prevalence of cross-disciplinary research, there is a need to develop methods to characterize its practices. Current computational methods to evaluate interdisciplinary engagement{---}such as affiliation diversity, keywords, and citation patterns{---}are insufficient to model the degree of engagement between disciplines, as well as the way in which the complementary expertise of co-authors is harnessed. In this paper, we propose an automated framework to address some of these issues on a large scale. Our framework tracks interdisciplinary citations in scientific articles and models: 1) the section and position in which they appear, and 2) the argumentative role that they play in the writing. To showcase our framework, we perform a preliminary analysis of interdisciplinary engagement in published work at the intersection of natural language processing and computational social science in the last decade."
 }
 
-@inproceedings{pham2024topicgpt,
-      title={TopicGPT: A Prompt-based Topic Modeling Framework}, 
-      author={Chau Minh Pham and Alexander Hoyle and Simeng Sun and Mohit Iyyer},
-      booktitle = "NAACL",
-      year={2024},
-      publisher = "Association for Computational Linguistics",
-      url = "https://arxiv.org/abs/2311.01449",
+@inproceedings{pham-etal-2024-topicgpt,
+    title = "TopicGPT: A Prompt-based Topic Modeling Framework",
+    author = "Pham, Chau Minh  and
+      Hoyle, Alexander  and
+      Sun, Simeng  and
+      Resnik, Philip  and
+      Iyyer, Mohit",
+    editor = "Duh, Kevin  and
+      Gomez, Helena  and
+      Bethard, Steven",
+    booktitle = "NAACL",
+    month = jun,
+    year = "2024",
+    address = "Mexico City, Mexico",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2024.naacl-long.164/",
+    doi = "10.18653/v1/2024.naacl-long.164",
+    pages = "2956--2984",
+    abstract = "Topic modeling is a well-established technique for exploring text corpora. Conventional topic models (e.g., LDA) represent topics as bags of words that often require "reading the tea leaves" to interpret; additionally, they offer users minimal control over the formatting and specificity of resulting topics. To tackle these issues, we introduce TopicGPT, a prompt-based framework that uses large language models (LLMs) to uncover latent topics in a text collection. TopicGPT produces topics that align better with human categorizations compared to competing methods: it achieves a harmonic mean purity of 0.74 against human-annotated Wikipedia topics compared to 0.64 for the strongest baseline. Its topics are also more interpretable, dispensing with ambiguous bags of words in favor of topics with natural language labels and associated free-form descriptions. Moreover, the framework is highly adaptable, allowing users to specify constraints and modify topics without the need for model retraining. By streamlining access to high-quality and interpretable topics, TopicGPT represents a compelling, human-centered approach to topic modeling."
 }
 
 @inproceedings{balepur-etal-2024-smart,
-    title = "A {SMART} Mnemonic Sounds like {\textquotedblleft}Glue Tonic{\textquotedblright}: Mixing {LLM}s with Student Feedback to Make Mnemonic Learning Stick",
+    title = "A SMART Mnemonic Sounds like 'Glue Tonic': Mixing LLMs with Student Feedback to Make Mnemonic Learning Stick",
     author = "Balepur, Nishant  and
       Shu, Matthew  and
       Hoyle, Alexander  and
@@ -197,7 +249,7 @@
     editor = "Al-Onaizan, Yaser  and
       Bansal, Mohit  and
       Chen, Yun-Nung",
-    booktitle = "Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing",
+    booktitle = "EMNLP",
     month = nov,
     year = "2024",
     address = "Miami, Florida, USA",
@@ -205,6 +257,7 @@
     url = "https://aclanthology.org/2024.emnlp-main.786/",
     doi = "10.18653/v1/2024.emnlp-main.786",
     pages = "14202--14225",
+    abstract = "Keyword mnemonics are memorable explanations that link new terms to simpler keywords. Prior work generates mnemonics for students, but they do not train models using mnemonics students prefer and aid learning. We build SMART, a mnemonic generator trained on feedback from real students learning new terms.To train SMART, we first fine-tune LLaMA-2 on a curated set of user-written mnemonics.We then use LLM alignment to enhance SMART: we deploy mnemonics generated by SMART in a flashcard app to find preferences on mnemonics students favor.We gather 2684 preferences from 45 students across two types: **expressed** (inferred from ratings) and observed (inferred from student learning), yielding three key findings. First, expressed and observed preferences disagree; what students *think* is helpful does not always capture what is *truly* helpful. Second, Bayesian models can synthesize complementary data from multiple preference types into a single effectiveness signal. SMART is tuned via Direct Preference Optimization on this signal, which resolves ties and missing labels in the typical method of pairwise comparisons, augmenting data for LLM output quality gains. Third, mnemonic experts assess SMART as matching GPT-4 at much lower deployment costs, showing the utility of capturing diverse student feedback to align LLMs in education."
 }
 
 @inproceedings{sarkar2025pairscale,
