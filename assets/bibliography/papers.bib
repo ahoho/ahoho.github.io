@@ -182,6 +182,16 @@
     abstract = "Topic models help us make sense of large text collections. Automatically evaluating their output and determining the optimal number of topics are both longstanding challenges, with no effective automated solutions to date. This paper proposes using large language models (LLMs) for these tasks. We find that LLMs appropriately assess the resulting topics, correlating more strongly with human judgments than existing automated metrics. However, the setup of the evaluation task is crucial {---} LLMs perform better on coherence ratings of word sets than on intrustion detection. We find that LLMs can also assist us in guiding us towards a reasonable number of topics. In actual applications, topic models are typically used to answer a research question related to a collection of texts. We can incorporate this research question in the prompt to the LLM, which helps estimating the optimal number of topics."
 }
 
+@phdthesis{hoyle-2024-dissertation,
+    title = "Developing and Measuring Latent Constructs in Text",
+    author = "Alexander Hoyle",
+    month = sep,
+    school = "University of Maryland",
+    type = "thesis",
+    thesis_type = "PhD Thesis",
+    year = "2024",
+}
+
 @inproceedings{pham-etal-2024-topicgpt,
     title = "TopicGPT: A Prompt-based Topic Modeling Framework",
     author = "Pham, Chau Minh  and
@@ -249,30 +259,76 @@
     abstract = "With the rise in the prevalence of cross-disciplinary research, there is a need to develop methods to characterize its practices. Current computational methods to evaluate interdisciplinary engagement{---}such as affiliation diversity, keywords, and citation patterns{---}are insufficient to model the degree of engagement between disciplines, as well as the way in which the complementary expertise of co-authors is harnessed. In this paper, we propose an automated framework to address some of these issues on a large scale. Our framework tracks interdisciplinary citations in scientific articles and models: 1) the section and position in which they appear, and 2) the argumentative role that they play in the writing. To showcase our framework, we perform a preliminary analysis of interdisciplinary engagement in published work at the intersection of natural language processing and computational social science in the last decade."
 }
 
-@inproceedings{hoyle2025proxann,
-    title={ProxAnn: Use-Oriented Evaluations of Topic Models and Document Clustering},
-    author={Alexander Hoyle* and Lorena Calvo-Bartolomé* and Jordan Boyd-Graber and Philip Resnik},
-    booktitle = "ACL",
-    year={2025},
+@inproceedings{hauke-etal-2025-scalar,
+    title = "Measuring scalar constructs in social science with LLMs",
+    author = "Licht, Hauke and Sarkar, Rupak and Wu, Patrick Y. and Goel, Pranav and Stoehr, Niklas and Ash, Elliott and Hoyle, Alexander",
+    booktitle = "EMNLP",
+    year = "2025"
 }
 
-@inproceedings{li2025large,
-    title={Large Language Models Struggle to Describe the Haystack without Human Help: Human-in-the-loop Evaluation of LLMs},
-    author={Zongxia Li and Lorena Calvo-Bartolomé and Alexander Hoyle and Paiheng Xu and Alden Dima and Juan Francisco Fung and Jordan Boyd-Graber},
-    booktitle = "ACL",
-    year={2025},
-    eprint={2502.14748},
-    archivePrefix={arXiv},
-    primaryClass={cs.CL}
+@inproceedings{fan-etal-2025-medium,
+    title = "The Medium Is Not the Message: Deconfounding Document Embeddings via Linear Concept Erasure",
+    author = "Fan, Yu and Tian, Yang and Ravfogel, Shauli and Sachan, Mrinmaya and Ash, Elliott and Hoyle, Alexander",
+    booktitle = "EMNLP",
+    year = "2025"
 }
 
+@inproceedings{nguyen-etal-2025-persuasive,
+    title = "How Persuasive Is My Context?",
+    author = "Nguyen, Tu and Du, Kevin, and Hoyle, Alexander, and Cotterell, Ryan",
+    booktitle = "EMNLP",
+    year = "2025"
+}
 
+@inproceedings{hoyle-etal-2025-proxann,
+    title = "ProxAnn: Use-Oriented Evaluations of Topic Models and Document Clustering",
+    author = "Hoyle*, Alexander  and
+      Calvo-Bartolomé*, Lorena  and
+      Boyd-Graber, Jordan Lee  and
+      Resnik, Philip",
+    editor = "Che, Wanxiang  and
+      Nabende, Joyce  and
+      Shutova, Ekaterina  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "ACL",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.acl-long.772/",
+    doi = "10.18653/v1/2025.acl-long.772",
+    pages = "15872--15897",
+    ISBN = "979-8-89176-251-0",
+    abstract = "Topic models and document-clustering evaluations either use automated metrics that align poorly with human preferences, or require expert labels that are intractable to scale. We design a scalable human evaluation protocol and a corresponding automated approximation that reflect practitioners' real-world usage of models. Annotators{---}or an LLM-based proxy{---}review text items assigned to a topic or cluster, infer a category for the group, then apply that category to other documents. Using this protocol, we collect extensive crowdworker annotations of outputs from a diverse set of topic models on two datasets. We then use these annotations to validate automated proxies, finding that the best LLM proxy is statistically indistinguishable from a human annotator and can therefore serve as a reasonable substitute in automated evaluations."
+}
 
+@inproceedings{li-etal-2025-large-language,
+    title = "Large Language Models Struggle to Describe the Haystack without Human Help: A Social Science-Inspired Evaluation of Topic Models",
+    author = "Li, Zongxia  and
+      Calvo-Bartolomé, Lorena  and
+      Hoyle, Alexander  and
+      Xu, Paiheng  and
+      Stephens, Daniel Kofi  and
+      Fung, Juan Francisco  and
+      Dima, Alden  and
+      Boyd-Graber, Jordan Lee",
+    editor = "Che, Wanxiang  and
+      Nabende, Joyce  and
+      Shutova, Ekaterina  and
+      Pilehvar, Mohammad Taher",
+    booktitle = "ACL",
+    month = jul,
+    year = "2025",
+    address = "Vienna, Austria",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.acl-long.375/",
+    doi = "10.18653/v1/2025.acl-long.375",
+    pages = "7583--7604",
+    ISBN = "979-8-89176-251-0",
+    abstract = "A common use of NLP is to facilitate the understanding of large document collections, with models based on Large Language Models (LLMs) replacing probabilistic topic models. Yet the effectiveness of LLM-based approaches in real-world applications remains under explored. This study measures the knowledge users acquire with topic models{---}including traditional, unsupervised and supervised LLM- based approaches{---}on two datasets. While LLM-based methods generate more human- readable topics and show higher average win probabilities than traditional models for data exploration, they produce overly generic topics for domain-specific datasets that do not easily allow users to learn much about the documents. Adding human supervision to LLM-based topic models improves data exploration by addressing hallucination and genericity but requires more human efforts. In contrast, traditional models like Latent Dirichlet Allocation (LDA) remain effective for exploration but are less user-friendly. This paper provides best practices{---}there is no one right model, the choice of models is situation-specific{---}and suggests potential improvements for scalable LLM- based topic models."
+}
 
-
-
-
-@article{doi:10.1086/736360,
+@article{sorelle-2025-express,
 author = {Gaynor, SoRelle  and Miler, Kristina and Goel, Pranav and Hoyle, Alexander  M. and Resnik, Philip},
 title = {Express Yourself (Ideologically): Legislators’ Ideal Points Across Audiences},
 journal = {The Journal of Politics},
@@ -287,7 +343,7 @@ eprint = {https://doi.org/10.1086/736360}
     author = "Sarkar, Rupak  and
       Wu, Patrick Y.  and
       Miler, Kristina  and
-      Hoyle, Alexander Miserlis  and
+      Hoyle, Alexander  and
       Resnik, Philip",
     editor = "Chiruzzo, Luis  and
       Ritter, Alan  and
