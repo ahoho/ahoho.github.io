@@ -10,7 +10,7 @@
         <span class="title">{{entry.title}}<br></span>
         <span class="author">
             {% for author in entry.author_list %}
-                {%- if author.last == last_name -%}
+                {%- if author.last.rstrip('*') == last_name -%}
                     <b>{{ author.first }} {{ author.last }}</b>
                 {%- else -%}
                     {{ author.first }} {{ author.last }}
