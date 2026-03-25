@@ -40,7 +40,7 @@
 
 <h2>How I would like to make lecture content</h2>
 
-<p>Putting together a talk or lecture, much like writing, is a way to clarify thinking and refine a narrative. A good lecture tells a story, and good stories are entertaining and coherent (see <a href="https://www.cs.jhu.edu/~jason/advice/how-to-give-a-technical-talk.html">Jason Eisner's excellent advice</a> on preparing technical talks). For pedagogical content, I try to deconstruct the logic of my own intuitions and understanding so that I can cleanly rebuild it over the course of the lecture.</p>
+<p>Putting together a talk or lecture, much like writing, is a way to clarify thinking and refine a narrative. A good lecture tells a story, and good stories are entertaining and coherent (see <a href="https://www.cs.jhu.edu/~jason/advice/how-to-give-a-technical-talk.html">Jason Eisner's excellent advice</a> on preparing technical talks). For instructional content, I try to deconstruct the logic of my own intuitions and understanding so that I can cleanly rebuild it over the course of the lecture.</p>
 
 <p>If you're anything like me, however, it is easy to get hung up on small details when building slides (like figuring out the right color for a text box), and building even a simple deck takes many hours. These distractions get in the way of constructing and considering the larger narrative. While this behavior can manifest when writing (long searches for that <em>mot juste</em>), usually I find that by working out the correct phrasing, I simultaneously clarify my thoughts (as well as build cognitive muscle). The same is not true for PowerPoint wrangling. Perfectly aligning slide elements is just a pain in the ass; it's not character-building.</p>
 
@@ -100,7 +100,7 @@
 
 <h2>Thoughts</h2>
 
-<p>Overall, I'm happy with how things went. The one thing I wanted to avoid was to feel like an imposter reading someone else's slides. Using lecture notes that were almost entirely<sup><a href="#fn5" id="fnref5" class="footnote-ref">5</a></sup> my own, with a narrative and examples I designed, helped stave off that feeling. While the slides didn't have my personal touch (a little more on this below), I still felt a (I think justified) ownership over the content.</p>
+<p>Overall, I'm happy with how things went. My main concern was to avoid feeling like an imposter reading someone else's slides. Using lecture notes that were almost<sup><a href="#fn5" id="fnref5" class="footnote-ref">5</a></sup> entirely my own, with a narrative and examples I designed, helped stave off that feeling. While the slides didn't have my personal touch (a little more on this below), I still felt an ownership over the content.</p>
 
 <p>The first part of the lecture on the Beta-Binomial was especially successful; the students were engaged and asked good questions, and several followed-up with additional questions during the break. I think the interactive beta-binomial was a hit and I think (hope?) it improved students' intuition.</p>
 
@@ -108,7 +108,7 @@
 
 <p>Beyond that, the other issue is that abstract visuals remain a challenge (see <a href="#gemini">notes on Gemini</a> below for a possible solution). Even simple plate diagrams proved challenging, requiring multiple iterations and never looking quite right. It could be preferable to have an LLM write TikZ code directly, compile it, and use that, or just mock it up myself.</p>
 
-<p>Anyone who has seen one of my talks also knows that I'm partial to "vintage" clipart (as has been sprinkled throughout this post). Without it, I feel the slides were a little soulless. In the future, I'll probably include these manually after&mdash;perhaps it will be worth shelling out for a <a href="https://slides.com">slides.com</a> subscription to get a WYSIWYG editor, or I just edit the HTML myself.</p>
+<p>Anyone who has seen one of my talks also knows that I'm partial to "vintage" MS Office clipart (sprinkled throughout this post). Without it, I feel the slides were a little soulless. In the future, I'll probably include these manually after&mdash;perhaps it will be worth shelling out for a <a href="https://slides.com">slides.com</a> subscription to get a WYSIWYG editor, or I'll just edit the HTML myself.</p>
 
 <img src="/bayesian-inference/clipart/random-clipart.svg" alt="Vintage clipart" class="clipart">
 
@@ -146,7 +146,7 @@
 
 <p>Building on the intuition that you should play to the models' strengths, and that those strengths are a function of training data, we might expect Gemini to produce nice slides. However, the UX for the Gemini integration is extremely buggy and frustrating, and currently only produces one slide at a time. This was basically a non-starter, especially because the slides are static images and non-editable.</p>
 
-<p>That said, for specific diagrams, it works well (ignoring this static image problem). I was recently putting together some slides on a mech. interp proposal, then had Gemini write detailed prompts for diagrams that I then passed to the Slide creator integration:</p>
+<p>That said, for specific diagrams, it works well (ignoring this static image problem). I was recently putting together some slides on a mechanistic interpretability proposal, and had Gemini write detailed prompts for diagrams that I then passed to the integration in Slides:</p>
 
 <figure>
     <img src="/bayesian-inference/gemini_diagram.png" alt="Gemini-generated diagram showing cross-prompt generalization in the residual stream">
@@ -159,7 +159,7 @@
 
 <p>The result is much better than the last time I tried this setup, perhaps because it had the lecture notes as scaffolding. In fact, had I tried this first, I may well have stuck with it.</p>
 
-<p>The slides are reasonably well-structured with a consistent, pleasant design language. Initially there were no visuals, but Claude created them after a follow-up request.<sup><a href="#fn6" id="fnref6" class="footnote-ref">6</a></sup> Weirdly, however, there are no real formulae. Everything is written in either Unicode or a kind of pseudo-LaTeX. This oversight really hurts their pedagogical utility. Perhaps I could prompt Claude to improve this (I'm assuming it would also paste in images), but I hit my session limit.</p>
+<p>The slides are reasonably well-structured with a consistent, pleasant design language. Initially there were no visuals, but Claude created them after a follow-up request (and of course interactivity is impossible).<sup><a href="#fn6" id="fnref6" class="footnote-ref">6</a></sup> Weirdly, however, there are no real formulae. Everything is written in either Unicode or a kind of pseudo-LaTeX. This oversight really hurts their utility in a learning context. Perhaps I could prompt Claude to improve this (I'm assuming it would also use images), but I hit my session limit.</p>
 
 <figure>
     <embed src="/bayesian-inference/Bayesian_Inference-claude_chat.pdf" type="application/pdf" class="pdf-embed">
@@ -168,7 +168,7 @@
 
 <h3>PowerPoint using the Claude plugin</h3>
 
-<p>Anthropic provides a Claude plugin for PowerPoint, which makes it easy to edit the generated slides and iterate. Unfortunately, it's worse than the chat interface: no formulae, sort of ugly, and the visuals are wrong.</p>
+<p>Anthropic provides a Claude plugin for PowerPoint, which makes it easy to edit the generated slides and iterate. Unfortunately, it's worse than the chat interface: no formulae, sort of ugly, and the visuals are completely wrong.</p>
 
 <figure>
     <embed src="/bayesian-inference/bayesian_inference-claude_plugin.pdf" type="application/pdf" class="pdf-embed">
@@ -177,7 +177,7 @@
 
 <h3>Copilot Plugin</h3>
 
-<p>The most obvious choice for AI-generated PowerPoints is the built-in Copilot plugin. The problems started immediately: I couldn't figure out how to upload my notes into the chat interface (I could only choose items from my OneDrive), so I just pasted them in as text. The first iteration was by far the worst of the attempts, literally just text on the page in the default font and clearly worse than a chalkboard talk. Copilot then suggested adding visuals, which pushed some elements off the page; it also created a separate python notebook for interactivity (which I didn't bother looking at). Weirdly, Copilot makes a separate file rather than working inside the open PowerPoint window. In all, fairly disappointing&mdash;I can see that if Copilot is all you've experienced, your opinion of AI is likely pretty bad!</p>
+<p>The most obvious choice for AI-generated PowerPoints is the built-in Copilot plugin. The problems started immediately: I couldn't figure out how to upload my notes into the chat interface (I could only choose items from my OneDrive), so I just pasted them in as text. The first iteration was by far the worst of the attempts, literally just text on the page in the default font and far worse than a chalkboard talk. Copilot then suggested adding visuals, which pushed some elements off the page; it also created a separate python notebook for interactivity (which I didn't bother looking at). Bizarrely, Copilot also makes a separate file rather than working inside the open PowerPoint window. In all, extremely disappointing&mdash;I can see that if Copilot is all you've experienced, your opinion of AI is likely pretty bad!</p>
 
 <figure>
     <embed src="/bayesian-inference/Bayesian_Inference_Lecture_WITH_Visuals_and_Notes-copilot.pdf" type="application/pdf" class="pdf-embed">
