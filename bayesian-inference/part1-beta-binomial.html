@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayesian Inference — Part I: Beta-Binomial</title>
+
+<!-- Reveal.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css" id="theme">
+
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#F8F6F1; --bg-warm:#F3F0E8; --text:#2B2B35; --text-muted:#7A7A88;
+  --theta:#3A7CA5; --likelihood:#D4853A; --prior:#5B8DB8; --posterior:#C2566E;
+  --heads:#E8A838; --heads-bg:#FDF3E0; --tails:#6BA3C7; --tails-bg:#E8F2F8;
+  --success:#5A9E6F; --muted-line:#D5D3CC; --card-bg:#FFFFFF; --card-border:#E8E6DF;
+  --shadow:0 2px 12px rgba(43,43,53,0.06);
+  --c1:#E8734A; --c2:#4AAF8C; --c3:#8B6CC1;
+  --c1-bg:rgba(232,115,74,0.12); --c2-bg:rgba(74,175,140,0.12); --c3-bg:rgba(139,108,193,0.12);
+}
+.reveal-viewport{background:var(--bg)}
+.reveal{font-family:'Source Sans 3','Segoe UI',sans-serif;font-size:28px;font-weight:400;color:var(--text)}
+.reveal h1,.reveal h2,.reveal h3{font-family:'Crimson Pro',Georgia,serif;font-weight:600;color:var(--text);letter-spacing:-0.01em;text-transform:none}
+.reveal h1{font-size:2.4em;font-weight:700}.reveal h2{font-size:1.5em;margin-bottom:0.5em}.reveal h3{font-size:1.15em;font-weight:600;color:var(--text-muted)}
+.reveal p,.reveal li{line-height:1.55}.reveal .slides section{padding:20px 40px}
+.reveal aside.notes{font-size:14px;line-height:1.5}
+.reveal .slides section .fragment.fade-up{opacity:0;transform:translateY(20px);transition:all 0.5s ease}
+.reveal .slides section .fragment.fade-up.visible{opacity:1;transform:translateY(0)}
+.reveal .slides section .fragment.grow-in{opacity:0;transform:scale(0.8);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.reveal .slides section .fragment.grow-in.visible{opacity:1;transform:scale(1)}
+.color-theta{color:var(--theta)}.color-like{color:var(--likelihood)}.color-prior{color:var(--prior)}.color-posterior{color:var(--posterior)}.color-heads{color:var(--heads)}.color-tails{color:var(--tails)}.color-muted{color:var(--text-muted)}
+.serif{font-family:'Crimson Pro',Georgia,serif}.mono{font-family:'IBM Plex Mono',monospace}.italic{font-style:italic}
+.eq-box{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:10px;padding:24px 36px;margin:20px auto;max-width:85%;box-shadow:var(--shadow)}
+.eq-box.highlight-like{border-left:4px solid var(--likelihood)}.eq-box.highlight-prior{border-left:4px solid var(--prior)}.eq-box.highlight-post{border-left:4px solid var(--posterior)}
+.small{font-size:0.72em}.smaller{font-size:0.6em}.big{font-size:1.3em}.center{text-align:center}.left{text-align:left}
+.label-badge{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.6em;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 10px;border-radius:5px;margin-bottom:6px}
+.label-badge.like{background:#FDF3E0;color:var(--likelihood)}.label-badge.prior{background:#E8F0F6;color:var(--prior)}.label-badge.post{background:#F8E8ED;color:var(--posterior)}
+.coin-row{display:flex;justify-content:center;gap:10px;margin:24px 0;flex-wrap:wrap}
+.coin{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.1),inset 0 1px 2px rgba(255,255,255,0.5);position:relative;transition:transform 0.3s ease}
+.coin.heads{background:linear-gradient(145deg,#F5C45A,var(--heads));color:#5C3D0E;border:2px solid #D49A28}
+.coin.tails{background:linear-gradient(145deg,#8FC4E0,var(--tails));color:#1E4A63;border:2px solid #5591B0}
+.coin.ghost{opacity:0.35;box-shadow:none;border-style:dashed}
+.coin .coin-inner{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,0.3)}
+@keyframes flipIn{0%{transform:rotateY(0) scale(0);opacity:0}50%{transform:rotateY(180deg) scale(1.1);opacity:.7}100%{transform:rotateY(360deg) scale(1);opacity:1}}
+.coin.animate{animation:flipIn .6s cubic-bezier(.34,1.56,.64,1) both}
+.coin-row .coin:nth-child(1){animation-delay:0s}.coin-row .coin:nth-child(2){animation-delay:.12s}.coin-row .coin:nth-child(3){animation-delay:.24s}.coin-row .coin:nth-child(4){animation-delay:.36s}.coin-row .coin:nth-child(5){animation-delay:.48s}.coin-row .coin:nth-child(6){animation-delay:.6s}.coin-row .coin:nth-child(7){animation-delay:.72s}.coin-row .coin:nth-child(8){animation-delay:.84s}.coin-row .coin:nth-child(9){animation-delay:.96s}.coin-row .coin:nth-child(10){animation-delay:1.08s}
+.widget-container{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:12px;padding:20px 24px;margin:16px auto;box-shadow:var(--shadow);max-width:90%}
+.slider-row{display:flex;align-items:center;gap:12px;margin:8px 0;font-size:.75em}
+.slider-row label{font-family:'Crimson Pro',serif;font-style:italic;font-size:1.2em;min-width:22px;text-align:right}
+.slider-row input[type=range]{flex:1;height:6px;cursor:pointer}
+.slider-row .slider-val{font-family:'IBM Plex Mono',monospace;font-size:.95em;min-width:40px;text-align:right;font-weight:500}
+.widget-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.widget-btn{border:none;cursor:pointer;border-radius:7px;font-family:'Source Sans 3',sans-serif;font-size:.7em;font-weight:600;padding:8px 16px;transition:all .2s}
+.widget-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}.widget-btn:active{transform:translateY(0)}
+.widget-btn.gold{background:var(--heads-bg);color:#8B6914;border:1.5px solid var(--heads)}
+.widget-btn.blue{background:var(--tails-bg);color:#2D6A8A;border:1.5px solid var(--tails)}
+.widget-btn.neutral{background:#F0EFE9;color:var(--text);border:1.5px solid var(--muted-line)}
+.widget-btn.danger{background:#FDE8E8;color:#B44;border:1.5px solid #E8AAAA}
+.stat-row{display:flex;gap:16px;justify-content:center;margin:10px 0}
+.stat-pill{text-align:center;padding:6px 16px;border-radius:8px;background:var(--bg)}
+.stat-pill .stat-label{font-size:.55em;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--text-muted)}
+.stat-pill .stat-value{font-family:'IBM Plex Mono',monospace;font-size:.9em;font-weight:600}
+.title-slide h1{font-size:2.8em;margin-bottom:.15em;background:linear-gradient(135deg,var(--prior),var(--posterior));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.title-slide .author{font-family:'Source Sans 3',sans-serif;font-size:.9em;color:var(--text-muted);margin-top:8px}
+.title-slide .date{font-family:'IBM Plex Mono',monospace;font-size:.6em;color:var(--text-muted);margin-top:4px}
+.section-divider{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.section-divider .act-label{font-family:'IBM Plex Mono',monospace;font-size:.55em;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px}
+.section-divider h2{font-size:2em}
+.prob-build{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;font-size:1.1em;font-family:'Crimson Pro',serif;line-height:2}
+.prob-build .term{padding:2px 3px;border-radius:4px;transition:all .3s}
+.prob-build .term.h{background:var(--heads-bg);color:#B8860B}
+.prob-build .term.t{background:var(--tails-bg);color:#2D6A8A}
+.arrangement-row{font-family:'IBM Plex Mono',monospace;font-size:.65em;letter-spacing:2px;margin:3px 0;text-align:center}
+.arrangement-row .ah{color:var(--heads);font-weight:600}.arrangement-row .at{color:var(--tails);font-weight:600}
+.reveal .slide-number{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text-muted);background:transparent}
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- SLIDE 1: TITLE -->
+<section class="title-slide" data-background-color="#F8F6F1">
+  <div style="margin-top:60px"><h1>Bayesian Inference</h1><p class="author">Alexander Hoyle</p><p class="date">March 2026</p></div>
+  <div style="margin-top:60px;display:flex;justify-content:center;gap:8px;opacity:.5">
+    <svg width="28" height="28" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--heads)" stroke-width="1.5" stroke-dasharray="3 2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" fill="var(--heads)" font-size="14" font-family="IBM Plex Mono" opacity=".7">H</text></svg>
+    <svg width="28" height="28" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--tails)" stroke-width="1.5" stroke-dasharray="3 2"/><text x="20" y="21" text-anchor="middle" dominant-baseline="central" fill="var(--tails)" font-size="14" font-family="IBM Plex Mono" opacity=".7">T</text></svg>
+  </div>
+  <aside class="notes">Welcome to the lecture on Bayesian Inference.</aside>
+</section>
+
+<!-- SLIDE 2: THE COIN DATA -->
+<section data-background-color="#F8F6F1">
+  <h2>Imagine you see this data</h2>
+  <div class="coin-row">
+    <div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin tails animate"><div class="coin-inner">T</div></div><div class="coin tails animate"><div class="coin-inner">T</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin heads animate"><div class="coin-inner">H</div></div><div class="coin tails animate"><div class="coin-inner">T</div></div>
+  </div>
+  <p class="big serif italic center" style="margin-top:40px">If I flip this coin again, what is \(P(X = \texttt{H})\)?</p>
+  <div class="fragment fade-up" style="margin-top:20px"><p class="center big serif" style="color:var(--theta)">½ ?</p></div>
+  <aside class="notes">Imagine I see ten coin flips, with 7 heads and 3 tails. If I flip this coin again, what is P(X=H)? You might answer 1/2. Which is maybe reasonable, although I didn't indicate it was a fair coin. Here's another question: What is the most likely probability of heads that will have produced the above set of coin flips?</aside>
+</section>
+
+<!-- SLIDE 3: DEFINE THE PMF -->
+<section data-background-color="#F8F6F1">
+  <h2>Setting up the model</h2>
+  <div class="eq-box" style="text-align:left">
+    <p>Define a probability mass function:</p>
+    <p class="center big" style="margin:16px 0">\(P(X = \texttt{H}) = \textcolor{#3A7CA5}{\theta}\) &nbsp; with &nbsp; \(\textcolor{#3A7CA5}{\theta} \in [0, 1]\)</p>
+    <p class="fragment fade-up" style="margin-top:12px">meaning &nbsp; \(P(X = \texttt{T}) = 1 - \textcolor{#3A7CA5}{\theta}\)</p>
+    <p class="fragment fade-up" style="margin-top:12px">A coin flip is a <em>sample</em>: &nbsp; \(X \sim P(X)\), where \(X \in \{\texttt{H}, \texttt{T}\}\)</p>
+  </div>
+  <aside class="notes">We define P(X=H)=θ with θ in [0,1], meaning P(X=T)=(1-θ). A coin flip is a sample from this distribution.</aside>
+</section>
+
+<!-- SLIDE 4: JOINT PROBABILITY BUILDUP -->
+<section data-background-color="#F8F6F1">
+  <h2>Joint probability of the data</h2>
+  <p>Probability of one head: \(\textcolor{#3A7CA5}{\theta}\)</p>
+  <p class="fragment fade-up">Two heads: \(\textcolor{#3A7CA5}{\theta} \cdot \textcolor{#3A7CA5}{\theta}\)</p>
+  <div class="fragment fade-up" style="margin-top:24px">
+    <p>Our exact sequence <span class="mono small" style="letter-spacing:1px">H H T T H H H H H T</span> :</p>
+    <div class="prob-build" style="margin-top:12px">
+      <span class="term h">\(\theta\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term t">\((1\!-\!\theta)\)</span><span>·</span><span class="term t">\((1\!-\!\theta)\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term h">\(\theta\)</span><span>·</span><span class="term t">\((1\!-\!\theta)\)</span>
+    </div>
+  </div>
+  <div class="fragment grow-in" style="margin-top:28px"><p class="center big serif">\(= \textcolor{#E8A838}{\theta^7} \textcolor{#6BA3C7}{(1 - \theta)^3}\)</p></div>
+  <aside class="notes">The probability of one head is θ. Two heads: θ·θ. The exact sequence HHTTHHHHHT gives θ^7(1-θ)^3.</aside>
+</section>
+
+<!-- SLIDE 5: BINOMIAL — arrangements + formula -->
+<section data-background-color="#F8F6F1">
+  <h2>The Binomial Distribution</h2>
+  <p class="small">Usually we care about the <em>number</em> of heads, not the exact sequence.</p>
+  <div class="fragment fade-up" style="margin-top:10px">
+    <p class="small">How many ways to arrange 7 heads in 10 flips?</p>
+    <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:12px 20px;margin:10px auto;max-width:70%">
+      <div class="arrangement-row"><span class="ah">H H H H H H H</span> <span class="at">T T T</span></div>
+      <div class="arrangement-row"><span class="ah">H H H H H H</span> <span class="at">T</span> <span class="ah">H</span> <span class="at">T T</span></div>
+      <div class="arrangement-row"><span class="ah">H H H H H</span> <span class="at">T</span> <span class="ah">H H</span> <span class="at">T T</span></div>
+      <div class="arrangement-row"><span class="ah">H H</span> <span class="at">T T</span> <span class="ah">H H H H H</span> <span class="at">T</span></div>
+      <div class="arrangement-row" style="color:var(--text-muted)">⋮</div>
+    </div>
+    <p class="center serif italic" style="font-size:1.1em;margin-top:8px">\(\binom{10}{7} = 120\) arrangements</p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:10px">
+    <div class="eq-box highlight-like">
+      <span class="label-badge like">Binomial PMF</span>
+      <p class="center" style="font-size:1.15em;margin:12px 0 4px">\(P(X = k \mid \textcolor{#3A7CA5}{\theta}) = \binom{n}{k} \textcolor{#3A7CA5}{\theta}^k (1 - \textcolor{#3A7CA5}{\theta})^{n-k}\)</p>
+      <p class="center small color-muted" style="margin:0">\(n\) independent Bernoulli trials, \(k\) successes</p>
+    </div>
+  </div>
+  <aside class="notes">We usually care less about the exact sequence and more about the count. C(10,7) = 120 arrangements. The Binomial distribution gives us this.</aside>
+</section>
+
+<!-- SLIDE 6: LIKELIHOOD FUNCTION -->
+<section data-background-color="#F8F6F1">
+  <h2>The <span class="color-like">Likelihood</span> Function</h2>
+  <p>What \(\textcolor{#3A7CA5}{\theta}\) makes our data <em>most likely</em>?</p>
+  <div class="fragment fade-up">
+    <div class="eq-box highlight-like">
+      <p class="center" style="font-size:1.15em;margin:8px 0">\(\textcolor{#D4853A}{\mathcal{L}(\theta \mid \mathcal{D})} = P(\mathcal{D} \mid \textcolor{#3A7CA5}{\theta})\)</p>
+    </div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:16px">
+    <p class="left small" style="max-width:80%;margin:0 auto"><strong>Key notational point:</strong> \(\textcolor{#D4853A}{\mathcal{L}(\theta \mid \mathcal{D})}\) and \(P(\mathcal{D} \mid \theta)\) are the <em>same quantity</em> — but \(\textcolor{#D4853A}{\mathcal{L}}\) highlights that \(\textcolor{#3A7CA5}{\theta}\) is the variable of interest, not the data \(\mathcal{D}\).</p>
+  </div>
+  <aside class="notes">We define the likelihood function. Note the change in notation: L(θ|D) and P(D|θ) are the same thing, but we use L to highlight that θ is the main variable.</aside>
+</section>
+
+<!-- SLIDE 7a: WHY LOG — monotonic graph -->
+<section data-background-color="#F8F6F1">
+  <h2>Maximum Likelihood Estimation</h2>
+  <p class="small">We want to maximize \(\textcolor{#D4853A}{\mathcal{L}(\theta \mid \mathcal{D})} = \binom{n}{k}\textcolor{#3A7CA5}{\theta}^k(1-\textcolor{#3A7CA5}{\theta})^{n-k}\)</p>
+  <p class="small fragment fade-up">Taking derivatives of products of exponentials is not very fun. But since \(\log\) is <em>monotonic</em>, the max of \(f(x)\) is the same as the max of \(\log f(x)\):</p>
+  <div class="fragment fade-up">
+    <div class="widget-container" style="max-width:600px;padding:14px">
+      <canvas id="mono-canvas" width="540" height="200" style="width:540px;height:200px;display:block;margin:0 auto"></canvas>
+      <p class="center small color-muted" style="margin:6px 0 0">Both peak at the same \(\theta\) — \(\log\) just reshapes the curve</p>
+    </div>
+  </div>
+  <aside class="notes">Mercifully, we can apply the log, because it is a monotonic function—the maximum of f(x) is the same as log f(x). Hence the extremely common quantity in ML: the log-likelihood.</aside>
+</section>
+
+<!-- SLIDE 7b: LOG-LIKELIHOOD DERIVATION (expanded) -->
+<section data-background-color="#F8F6F1">
+  <h2>The <span class="color-like">log-likelihood</span></h2>
+  <div style="text-align:left;max-width:88%;margin:0 auto;font-size:0.85em">
+    <p>Start from the likelihood:</p>
+    <p class="center">\(\textcolor{#D4853A}{\ell(\theta \mid \mathcal{D})} = \log\!\left[\binom{n}{k}\textcolor{#3A7CA5}{\theta}^k(1-\textcolor{#3A7CA5}{\theta})^{n-k}\right]\)</p>
+    <div class="fragment fade-up" style="margin-top:12px">
+      <p>The \(\log\) of a product is a sum of \(\log\)s:</p>
+      <p class="center">\(= \log\binom{n}{k} + \log\!\left(\textcolor{#3A7CA5}{\theta}^k\right) + \log\!\left((1-\textcolor{#3A7CA5}{\theta})^{n-k}\right)\)</p>
+    </div>
+    <div class="fragment fade-up" style="margin-top:12px">
+      <p>And by the power rule, \(\log(a^b) = b\log(a)\):</p>
+      <p class="center">\(= \log\binom{n}{k} + k\log\textcolor{#3A7CA5}{\theta} + (n-k)\log(1-\textcolor{#3A7CA5}{\theta})\)</p>
+    </div>
+    <div class="fragment grow-in" style="margin-top:14px">
+      <div class="eq-box highlight-like" style="padding:14px 24px;max-width:100%">
+        <p class="center" style="margin:4px 0">\(\textcolor{#D4853A}{\ell(\theta \mid \mathcal{D})} = \underbrace{\log\binom{n}{k}}_{\text{constant w.r.t. }\theta} + k\log\textcolor{#3A7CA5}{\theta} + (n-k)\log(1-\textcolor{#3A7CA5}{\theta})\)</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">The log-likelihood breaks the product into a sum. Log of a product is sum of logs, and log(a^b) = b*log(a). The binomial coefficient is a constant with respect to θ.</aside>
+</section>
+
+<!-- SLIDE 7c: MLE DERIVATION (full steps) -->
+<section data-background-color="#F8F6F1">
+  <h2>Finding the MLE</h2>
+  <div style="text-align:left;max-width:88%;margin:0 auto;font-size:0.82em">
+    <p>\(\log\binom{n}{k}\) is constant w.r.t. \(\textcolor{#3A7CA5}{\theta}\) and disappears when differentiating. Set the derivative to zero:</p>
+    <div class="fragment fade-up" style="margin-top:10px"><p class="center">\(\dfrac{\partial\,\ell}{\partial\,\theta} = \dfrac{k}{\theta} - \dfrac{n-k}{1-\theta} = 0\)</p></div>
+    <div class="fragment fade-up" style="margin-top:8px"><p class="center">\(\dfrac{k}{\theta} = \dfrac{n-k}{1-\theta}\)</p></div>
+    <div class="fragment fade-up" style="margin-top:8px"><p class="center">\(k(1-\theta) = (n-k)\theta\)</p></div>
+    <div class="fragment fade-up" style="margin-top:8px"><p class="center">\(k - k\theta = n\theta - k\theta\)</p></div>
+    <div class="fragment fade-up" style="margin-top:8px"><p class="center">\(k = n\theta\)</p></div>
+    <div class="fragment grow-in" style="margin-top:12px">
+      <p class="center big" style="padding:14px;background:var(--heads-bg);border-radius:10px;display:inline-block;width:100%;box-sizing:border-box">\(\textcolor{#3A7CA5}{\theta_{\text{MLE}}^*} = \dfrac{k}{n} = \dfrac{7}{10}\)</p>
+    </div>
+    <div class="fragment fade-up" style="margin-top:12px">
+      <p class="small color-muted">Quite some work for a very intuitive result! The MLE is just the empirical mean. If \(\theta\) were 0.9, we'd expect 9 heads in 10 flips, not 7.</p>
+    </div>
+  </div>
+  <aside class="notes">Taking the partial derivative and setting it to zero. k/θ = (n-k)/(1-θ). Cross-multiply, simplify: k = nθ, so θ_MLE = k/n = 7/10.</aside>
+</section>
+
+<!-- SLIDE 8: INTERACTIVE LIKELIHOOD EXPLORER -->
+<section data-background-color="#F8F6F1">
+  <h2><span class="color-like">Likelihood</span> Explorer</h2>
+  <div class="widget-container" style="max-width:820px">
+    <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center"><div style="flex:1;min-width:350px"><canvas id="like-canvas" width="700" height="340" style="width:700px;height:340px;display:block;margin:0 auto"></canvas></div></div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:12px;align-items:center;justify-content:center">
+      <div class="slider-row" style="flex:1;min-width:200px"><label style="font-style:normal;font-family:'IBM Plex Mono';font-size:1em;color:var(--heads)">k</label><input type="range" id="like-k" min="0" max="50" value="7" style="accent-color:var(--heads)"><span class="slider-val color-heads" id="like-k-val">7</span></div>
+      <div class="slider-row" style="flex:1;min-width:200px"><label style="font-style:normal;font-family:'IBM Plex Mono';font-size:1em;color:var(--tails)">n</label><input type="range" id="like-n" min="1" max="50" value="10" style="accent-color:var(--tails)"><span class="slider-val color-tails" id="like-n-val">10</span></div>
+    </div>
+    <div class="stat-row"><div class="stat-pill"><div class="stat-label">MLE</div><div class="stat-value color-theta" id="like-mle">0.700</div></div><div class="stat-pill"><div class="stat-label">Heads</div><div class="stat-value color-heads" id="like-heads">7</div></div><div class="stat-pill"><div class="stat-label">Tails</div><div class="stat-value color-tails" id="like-tails">3</div></div></div>
+  </div>
+  <aside class="notes">Interactive plot of the likelihood and log-likelihood. Change k and n. The maximum of both curves is always at k/n.</aside>
+</section>
+
+<!-- SLIDE 9: DOES THIS FEEL RIGHT? -->
+<section data-background-color="#F8F6F1">
+  <h2>Does this feel right?</h2>
+  <div class="fragment fade-up">
+    <p>I flip a one-franc coin <strong>5 times</strong> and get <strong class="color-heads">4 heads</strong>:</p>
+    <div class="coin-row" style="margin:12px 0"><div class="coin heads" style="width:50px;height:50px;font-size:18px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:50px;height:50px;font-size:18px"><div class="coin-inner">H</div></div><div class="coin tails" style="width:50px;height:50px;font-size:18px"><div class="coin-inner">T</div></div><div class="coin heads" style="width:50px;height:50px;font-size:18px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:50px;height:50px;font-size:18px"><div class="coin-inner">H</div></div></div>
+    <p class="center serif italic">\(\theta_{\text{MLE}}^* = \frac{4}{5} = 0.8\)</p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:16px">
+    <p>I flip it <strong>10 times</strong> and get <strong class="color-heads">9 heads</strong>:</p>
+    <div class="coin-row" style="margin:12px 0"><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin tails" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">T</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:44px;height:44px;font-size:16px"><div class="coin-inner">H</div></div></div>
+    <p class="center serif italic">\(\theta_{\text{MLE}}^* = \frac{9}{10} = 0.9\)</p>
+  </div>
+  <div class="fragment grow-in" style="margin-top:16px">
+    <p class="center big serif italic color-posterior">Is a real franc coin really 90% heads?</p>
+    <p class="center small color-muted">If 100 people all flipped 10 fair coins, roughly 1 would get 9 heads. Could we maybe encode this idea that, even if we observe 9 heads, maybe we're not entirely convinced the coin is biased?</p>
+  </div>
+  <aside class="notes">Does this feel right? If 100 people flipped 10 fair coins, roughly 1 would get 9 heads. Could we encode the belief that this seems unlikely?</aside>
+</section>
+
+<!-- SLIDE 10: SECTION DIVIDER — PRIORS -->
+<section class="section-divider" data-background-color="#F3F0E8">
+  <div class="act-label">Section</div><h2>Priors</h2>
+  <p class="color-muted" style="font-size:.8em;margin-top:8px">Encoding beliefs before seeing data</p>
+  <aside class="notes">This gets at the main distinction in statistics: frequentism and Bayesian.</aside>
+</section>
+
+<!-- SLIDE 11: FREQ VS BAYES -->
+<section data-background-color="#F8F6F1">
+  <h2>Two philosophies</h2>
+  <div style="display:flex;gap:24px;margin-top:20px">
+    <div class="fragment fade-up" style="flex:1;background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:12px;padding:24px;border-top:4px solid var(--text-muted)">
+      <h3 style="color:var(--text-muted);margin:0 0 10px">Frequentist</h3>
+      <p class="small" style="margin:0">There is a <em>true</em> fixed parameter \(\textcolor{#3A7CA5}{\theta}\). We observe data until our estimates converge to it. Estimates are noisy with less data, but <strong>only samples can inform those estimates</strong>.</p>
+    </div>
+    <div class="fragment fade-up" style="flex:1;background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:12px;padding:24px;border-top:4px solid var(--prior)">
+      <h3 style="color:var(--prior);margin:0 0 10px">Bayesian</h3>
+      <p class="small" style="margin:0">We can incorporate <em>prior knowledge or beliefs</em> about \(\textcolor{#3A7CA5}{\theta}\) before we've seen data, and the <strong>data lets us update those beliefs</strong>.</p>
+    </div>
+  </div>
+  <aside class="notes">In the frequentist case, we assume there is some true parameter, only data informs estimates. In the Bayesian case, we incorporate prior beliefs, and data updates them.</aside>
+</section>
+
+<!-- SLIDE 12: THE PRIOR DENSITY -->
+<section data-background-color="#F8F6F1">
+  <h2>The <span class="color-prior">Prior</span> Density</h2>
+  <div class="eq-box highlight-prior" style="text-align:center">
+    <span class="label-badge prior">Prior</span>
+    <p class="big" style="margin:12px 0 4px">\(\textcolor{#5B8DB8}{p(}\textcolor{#3A7CA5}{\theta}\textcolor{#5B8DB8}{)}\)</p>
+    <p class="small color-muted" style="margin:0">A continuous distribution over possible parameter values</p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:20px">
+    <div style="background:#F0EFE9;border-radius:8px;padding:14px 20px;max-width:80%;margin:0 auto">
+      <p class="small" style="margin:0"><strong>On notation:</strong> we use uppercase \(P(\cdot)\) for probability mass functions (discrete distributions, like the Binomial) and lowercase \(p(\cdot)\) for probability density functions (continuous distributions). You will see both going forward.</p>
+    </div>
+  </div>
+  <aside class="notes">To encode this idea, we bring out the prior density p(θ). Notation: uppercase P for PMFs, lowercase p for PDFs.</aside>
+</section>
+
+<!-- SLIDE 13: INTERACTIVE BETA PRIOR -->
+<section data-background-color="#F8F6F1">
+  <h2><span class="color-prior">Beta</span> Distribution Explorer</h2>
+  <div class="widget-container" style="max-width:820px">
+    <canvas id="beta-canvas" width="700" height="300" style="width:700px;height:300px;display:block;margin:0 auto"></canvas>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:8px">
+      <div class="slider-row" style="flex:1;min-width:200px"><label class="color-prior">\(\alpha\)</label><input type="range" id="beta-alpha" min="0.1" max="25" step="0.1" value="3" style="accent-color:var(--prior)"><span class="slider-val color-prior" id="beta-alpha-val">3.0</span></div>
+      <div class="slider-row" style="flex:1;min-width:200px"><label class="color-prior">\(\beta\)</label><input type="range" id="beta-beta" min="0.1" max="25" step="0.1" value="3" style="accent-color:var(--prior)"><span class="slider-val color-prior" id="beta-beta-val">3.0</span></div>
+    </div>
+    <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;flex-wrap:wrap" id="ghost-coin-row"></div>
+    <div class="stat-row"><div class="stat-pill"><div class="stat-label">Mean</div><div class="stat-value color-prior" id="beta-mean">0.500</div></div><div class="stat-pill"><div class="stat-label">Mode</div><div class="stat-value color-prior" id="beta-mode">0.500</div></div><div class="stat-pill"><div class="stat-label">Pseudo-obs</div><div class="stat-value color-muted" id="beta-pseudo">4</div></div></div>
+  </div>
+  <aside class="notes">Let's visualize the prior. This is a probability density function. The ghost coins represent pseudo-observations: α−1 imagined heads and β−1 imagined tails.</aside>
+</section>
+
+<!-- SLIDE 14: BETA FUNCTIONAL FORM -->
+<section data-background-color="#F8F6F1">
+  <h2>The <span class="color-prior">Beta</span> Distribution</h2>
+  <div class="eq-box highlight-prior">
+    <span class="label-badge prior">Prior</span>
+    <p class="center" style="font-size:1.15em;margin:12px 0 8px">\(\textcolor{#5B8DB8}{p(}\textcolor{#3A7CA5}{\theta}\textcolor{#5B8DB8}{)} = \dfrac{1}{\mathrm{B}(\alpha,\beta)}\textcolor{#3A7CA5}{\theta}^{\alpha-1}(1-\textcolor{#3A7CA5}{\theta})^{\beta-1}\)</p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:16px">
+    <p class="center small color-muted">Don't worry too much about \(\mathrm{B}(\cdot)\): it is a normalization constant to make sure the total probability is one.</p>
+    <p class="center" style="margin-top:6px">\(\mathrm{B}(\alpha,\beta) = \dfrac{\Gamma(\alpha)\,\Gamma(\beta)}{\Gamma(\alpha+\beta)} = \displaystyle\int_0^1 \theta^{\alpha-1}(1-\theta)^{\beta-1}\,d\theta\)</p>
+  </div>
+  <div class="fragment fade-up" style="margin-top:20px"><p class="center small">Notice the shape: \(\textcolor{#3A7CA5}{\theta}^{\text{something}} \cdot (1 - \textcolor{#3A7CA5}{\theta})^{\text{something}}\) — remember this form!</p></div>
+  <aside class="notes">The Beta distribution. B(α,β) is a normalization constant. The key shape: θ^(α-1)(1-θ)^(β-1). Remember this — you'll see it again.</aside>
+</section>
+
+<!-- SLIDE 15: SECTION DIVIDER — POSTERIORS -->
+<section class="section-divider" data-background-color="#F3F0E8">
+  <div class="act-label">Section</div><h2>Posteriors</h2>
+  <p class="color-muted" style="font-size:.8em;margin-top:8px">Updating beliefs with data</p>
+  <aside class="notes">So we have a prior. But now let's say we've observed our ten coin flips.</aside>
+</section>
+
+<!-- SLIDE 16: POSTERIOR MOTIVATION -->
+<section data-background-color="#F8F6F1">
+  <h2>Updating our beliefs</h2>
+  <p>I've observed my data — my ten coin flips. Maybe I want to change my belief about \(\textcolor{#3A7CA5}{\theta}\)?</p>
+  <p class="fragment fade-up">Sure, nine out of ten could be good luck — but if I got <em>29</em> out of 30 heads, I would probably wonder about that coin. Our beliefs would shift.</p>
+  <div class="fragment fade-up" style="margin-top:20px">
+    <div class="eq-box highlight-post">
+      <span class="label-badge post">Posterior</span>
+      <p class="center big" style="margin:12px 0 4px">\(\textcolor{#C2566E}{p(\theta \mid \mathcal{D}, \alpha, \beta)}\)</p>
+      <p class="center small color-muted" style="margin:0">The distribution over \(\textcolor{#3A7CA5}{\theta}\) conditioned on observed data, plus our original beliefs</p>
+    </div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:12px"><p class="center small color-muted">We will write this as \(\textcolor{#C2566E}{p(\theta \mid \mathcal{D})}\) because we treat \(\alpha, \beta\) as fixed. This is the <strong>posterior distribution</strong>.</p></div>
+  <aside class="notes">It makes sense to think of the distribution over θ conditioned on observed data, plus our original beliefs encoded in α and β. This is the posterior distribution.</aside>
+</section>
+
+<!-- SLIDE 17: BAYES RULE -->
+<section data-background-color="#F8F6F1">
+  <h2>Bayes' Rule</h2>
+  <div class="eq-box" style="margin-top:16px"><p class="center" style="font-size:1.1em;margin:10px 0">\(P(A \mid B) = \dfrac{P(A,B)}{P(B)} = \dfrac{P(B \mid A)\,P(A)}{P(B)}\)</p></div>
+  <div class="fragment fade-up" style="margin-top:20px">
+    <p class="small">Applied to our setting (recall that \(\textcolor{#D4853A}{\mathcal{L}(\theta \mid \mathcal{D})}\) is the same quantity as \(p(\mathcal{D}\mid\theta)\), just viewed as a function of \(\theta\)):</p>
+    <div class="eq-box highlight-post" style="margin-top:10px">
+      <p class="center" style="font-size:1.0em;margin:8px 0">\(\textcolor{#C2566E}{p(\theta \mid \mathcal{D})} = \dfrac{\textcolor{#D4853A}{p(\mathcal{D} \mid \theta)} \cdot \textcolor{#5B8DB8}{p(\theta)}}{\displaystyle\int \textcolor{#D4853A}{p(\mathcal{D}\mid\theta')} \, \textcolor{#5B8DB8}{p(\theta')} \,d\theta'}\)</p>
+    </div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:14px"><p class="center small color-muted" style="max-width:80%;margin:0 auto">The denominator — the <em>marginal likelihood</em> — requires integrating over all possible \(\theta\). This is basically intractable (and effectively impossible when \(\theta\) may be multiple parameters).</p></div>
+  <aside class="notes">Bayes' rule. P(A|B) = P(A,B)/P(B) = P(B|A)P(A)/P(B). The denominator — the marginal likelihood — is basically intractable. We can't easily integrate over all possible θ.</aside>
+</section>
+
+<!-- SLIDE 18: PROPORTIONALITY -->
+<section data-background-color="#F8F6F1">
+  <h2>The proportionality trick</h2>
+  <p class="small">\(p(\mathcal{D})\) is fixed and does not depend on \(\textcolor{#3A7CA5}{\theta}\), so:</p>
+  <div class="fragment fade-up" style="margin-top:8px"><p class="center">\(\textcolor{#C2566E}{p(\theta \mid \mathcal{D})} = \frac{1}{Z}\,\textcolor{#D4853A}{p(\mathcal{D} \mid \theta)}\,\textcolor{#5B8DB8}{p(\theta)}\)</p></div>
+  <div class="fragment fade-up">
+    <div class="eq-box highlight-post" style="padding:20px 36px">
+      <p class="center" style="font-size:1.2em;margin:8px 0">\(\textcolor{#C2566E}{p(\theta \mid \mathcal{D})} \;\propto\; \textcolor{#D4853A}{p(\mathcal{D} \mid \theta)} \;\cdot\; \textcolor{#5B8DB8}{p(\theta)}\)</p>
+      <p class="center" style="font-size:1.2em;margin:12px 0 4px;padding-top:10px;border-top:1.5px solid var(--card-border)"><span class="color-posterior serif italic">posterior</span> \(\;\propto\;\) <span class="color-like serif italic">likelihood</span> \(\;\times\;\) <span class="color-prior serif italic">prior</span></p>
+    </div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:12px"><p class="center color-muted small">This is one of the fundamental mechanisms in Bayesian inference.</p></div>
+  <aside class="notes">p(D) is fixed and does not depend on θ, so the posterior is proportional to the numerator: posterior ∝ likelihood × prior. This is one of the fundamental mechanisms in Bayesian inference.</aside>
+</section>
+
+<!-- SLIDE 19: DERIVING THE POSTERIOR -->
+<section data-background-color="#F8F6F1">
+  <h2>Deriving the <span class="color-posterior">posterior</span></h2>
+  <div style="text-align:left;max-width:88%;margin:0 auto;font-size:0.82em">
+    <p>\(\textcolor{#C2566E}{p(\theta\mid\mathcal{D})} \;\propto\; \textcolor{#D4853A}{\underbrace{\binom{n}{k}\theta^k(1-\theta)^{n-k}}_{\text{Binomial likelihood}}} \;\cdot\; \textcolor{#5B8DB8}{\underbrace{\frac{1}{\mathrm{B}(\alpha,\beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1}}_{\text{Beta prior}}}\)</p>
+    <div class="fragment fade-up" style="margin-top:12px"><p>Drop constants w.r.t. \(\theta\):</p><p class="center">\(\propto\; \theta^k(1-\theta)^{n-k}\;\cdot\;\theta^{\alpha-1}(1-\theta)^{\beta-1}\)</p></div>
+    <div class="fragment grow-in" style="margin-top:12px"><p>Combine exponents:</p><p class="center big">\(\propto\; \theta^{\,k+\alpha-1}(1-\theta)^{\,n-k+\beta-1}\)</p></div>
+    <div class="fragment grow-in" style="margin-top:14px"><p style="background:#F8E8ED;padding:12px 20px;border-radius:10px;border-left:4px solid var(--posterior)"><span class="color-posterior">This looks like a Beta distribution!</span></p></div>
+  </div>
+  <aside class="notes">Plug in the Binomial likelihood and Beta prior. Drop constants, combine exponents: θ^(k+α-1)(1-θ)^(n-k+β-1). This looks like a Beta distribution!</aside>
+</section>
+
+<!-- SLIDE 19b: WORKING OUT Z -->
+<section data-background-color="#F8F6F1">
+  <h2>Working out the normalizing constant</h2>
+  <div style="text-align:left;max-width:88%;margin:0 auto;font-size:0.82em">
+    <p>We know the posterior must integrate to 1:</p>
+    <p class="center">\(1 = \displaystyle\int_0^1 p(\theta\mid\mathcal{D})\,d\theta = \int_0^1 \frac{1}{Z}\,\theta^{k+\alpha-1}(1-\theta)^{n-k+\beta-1}\,d\theta\)</p>
+    <div class="fragment fade-up" style="margin-top:14px"><p>So:</p><p class="center">\(Z = \displaystyle\int_0^1 \theta^{k+\alpha-1}(1-\theta)^{n-k+\beta-1}\,d\theta = \mathrm{B}(k+\alpha,\; n-k+\beta)\)</p></div>
+    <div class="fragment grow-in" style="margin-top:18px">
+      <div class="eq-box highlight-post" style="max-width:100%">
+        <span class="label-badge post">Posterior</span>
+        <p class="center" style="font-size:1.05em;margin:10px 0 4px">\(\textcolor{#C2566E}{p(\theta\mid\mathcal{D})} = \dfrac{1}{\mathrm{B}(k+\alpha,\; n-k+\beta)}\,\theta^{k+\alpha-1}(1-\theta)^{n-k+\beta-1}\)</p>
+        <p class="center" style="margin:8px 0 0">\(= \textcolor{#C2566E}{\text{Beta}(k + \alpha,\; n - k + \beta)}\)</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">The posterior must integrate to 1, so Z = B(k+α, n-k+β). The posterior is Beta(k+α, n−k+β). When a posterior has the same functional form as the prior, we call this a conjugate prior.</aside>
+</section>
+
+<!-- SLIDE 20: CONJUGACY + MAP with derivation -->
+<section data-background-color="#F8F6F1">
+  <h2>Conjugacy &amp; MAP Estimation</h2>
+  <div class="fragment fade-up"><p class="small">When the posterior has the <em>same functional form</em> as the prior, we call it a <strong class="color-prior">conjugate prior</strong>. We can also maximize this quantity. Note: we don't need the normalizing constant!</p></div>
+  <div class="fragment fade-up" style="margin-top:10px;font-size:0.82em;max-width:88%;margin-left:auto;margin-right:auto"><p class="center">\(\dfrac{\partial}{\partial\theta}\left[\theta^{k+\alpha-1}(1-\theta)^{n-k+\beta-1}\right] = 0\)</p></div>
+  <div class="fragment fade-up" style="margin-top:6px;font-size:0.78em;max-width:88%;margin-left:auto;margin-right:auto"><p class="center">\((k+\alpha-1)\,\theta^{k+\alpha-2}(1-\theta)^{n-k+\beta-1} = (n-k+\beta-1)\,\theta^{k+\alpha-1}(1-\theta)^{n-k+\beta-2}\)</p></div>
+  <div class="fragment grow-in" style="margin-top:12px">
+    <div class="eq-box highlight-post"><span class="label-badge post">Maximum A Posteriori</span><p class="center" style="font-size:1.1em;margin:12px 0 4px">\(\textcolor{#C2566E}{\theta_{\text{MAP}}^*} = \dfrac{k + \alpha - 1}{n + \alpha + \beta - 2}\)</p></div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:12px"><p class="small" style="max-width:80%;margin:0 auto">The <strong class="color-posterior">MAP</strong> is the <em>mode</em> (peak) of the posterior — not the mean. <span class="color-muted">The posterior mean is \(\frac{k+\alpha}{n+\alpha+\beta}\).</span> As \(n \to \infty\), both converge to the MLE \(\frac{k}{n}\) — the data eventually overwhelms the prior.</p></div>
+  <aside class="notes">Conjugate prior: same form. We maximize the unnormalized posterior — the normalizing constant doesn't matter for finding the mode. The MAP is the mode, not the mean. As n grows, both converge to the MLE.</aside>
+</section>
+
+<!-- SLIDE 21: PSEUDO-COUNT INTERPRETATION -->
+<section data-background-color="#F8F6F1">
+  <h2>The pseudo-count interpretation</h2>
+  <div class="eq-box highlight-post" style="text-align:center"><p style="font-size:1.1em;margin:12px 0">\(\textcolor{#C2566E}{\theta_{\text{MAP}}^*} = \dfrac{\textcolor{#D4853A}{\text{observed heads}} + \textcolor{#5B8DB8}{\text{prior heads}}}{\textcolor{#D4853A}{\text{observed flips}} + \textcolor{#5B8DB8}{\text{prior flips}}}\)</p></div>
+  <div class="fragment fade-up" style="margin-top:28px;display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap">
+    <div style="display:flex;gap:6px;padding:10px 14px;border:2px dashed var(--muted-line);border-radius:10px;background:rgba(0,0,0,.015)">
+      <div class="coin heads ghost" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">H</div></div><div class="coin heads ghost" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">H</div></div><div class="coin tails ghost" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">T</div></div><div class="coin tails ghost" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">T</div></div>
+      <span class="small color-muted" style="align-self:center;margin-left:4px">← prior</span>
+    </div>
+    <span style="font-size:1.3em;color:var(--text-muted)">+</span>
+    <div style="display:flex;gap:6px;padding:10px 14px;border:2px solid var(--card-border);border-radius:10px;background:var(--card-bg)">
+      <div class="coin heads" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">H</div></div><div class="coin heads" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">H</div></div><div class="coin tails" style="width:40px;height:40px;font-size:14px"><div class="coin-inner">T</div></div>
+      <span class="small color-muted" style="align-self:center;margin-left:4px">← data</span>
+    </div>
+  </div>
+  <div class="fragment fade-up" style="margin-top:24px"><p class="center small color-muted" style="max-width:80%;margin:0 auto">The \(\alpha\) and \(\beta\) parameters have been updated with the number of successes \(k\) and failures \(n - k\). A stronger prior (more ghost coins) requires more real data to shift.</p></div>
+  <aside class="notes">This sheds light on α and β. Think of it as: observed heads plus prior heads, over observed flips plus prior flips. A stronger prior (more ghost coins) requires more real data to shift.</aside>
+</section>
+
+<!-- SLIDE 22: THE BIG INTERACTIVE -->
+<section data-background-color="#F8F6F1">
+  <h2>Bayesian Updating — <span class="color-posterior">Live</span></h2>
+  <div class="widget-container" id="bayes-widget" style="max-width:860px;padding:16px 20px">
+    <canvas id="bayes-canvas" width="720" height="260" style="width:720px;height:260px;display:block;margin:0 auto"></canvas>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+      <div class="slider-row" style="flex:1;min-width:160px"><label class="color-prior">\(\alpha\)</label><input type="range" id="bayes-alpha" min="0.1" max="25" step="0.1" value="5" style="accent-color:var(--prior)"><span class="slider-val color-prior" id="bayes-alpha-val">5.0</span></div>
+      <div class="slider-row" style="flex:1;min-width:160px"><label class="color-prior">\(\beta\)</label><input type="range" id="bayes-beta" min="0.1" max="25" step="0.1" value="5" style="accent-color:var(--prior)"><span class="slider-val color-prior" id="bayes-beta-val">5.0</span></div>
+    </div>
+    <div class="widget-controls" style="justify-content:center">
+      <button class="widget-btn gold" id="btn-heads">+ Heads</button>
+      <button class="widget-btn blue" id="btn-tails">+ Tails</button>
+      <button class="widget-btn neutral" id="btn-random">🎲 Random</button>
+      <button class="widget-btn neutral" id="btn-10">+10</button>
+      <button class="widget-btn neutral" id="btn-50">+50</button>
+      <button class="widget-btn danger" id="btn-reset">Reset</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;min-height:36px;margin:6px 0" id="bayes-coins"></div>
+    <div class="stat-row">
+      <div class="stat-pill"><div class="stat-label">Heads</div><div class="stat-value color-heads" id="b-heads">0</div></div>
+      <div class="stat-pill"><div class="stat-label">Tails</div><div class="stat-value color-tails" id="b-tails">0</div></div>
+      <div class="stat-pill"><div class="stat-label">MLE</div><div class="stat-value color-like" id="b-mle">—</div></div>
+      <div class="stat-pill"><div class="stat-label">MAP</div><div class="stat-value color-posterior" id="b-map">—</div></div>
+      <div class="stat-pill"><div class="stat-label">Post. Mean</div><div class="stat-value color-posterior" id="b-pmean">—</div></div>
+    </div>
+  </div>
+  <aside class="notes">The full interactive Bayesian updating tool. Flip coins and watch the posterior shift. Try a strong prior (α=β=20) and see how many flips it takes. Then try α=β=1 (flat prior) — the posterior immediately follows the likelihood.</aside>
+</section>
+
+<!-- SLIDE 22b: PUTTING IT TOGETHER — BETA-BINOMIAL PLATE DIAGRAM -->
+<section data-background-color="#F8F6F1">
+  <h2>Putting it together</h2>
+  <div style="display:flex;gap:28px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap">
+    <div style="text-align:left;font-size:0.82em;min-width:220px">
+      <p style="margin:0 0 8px"><strong>The generative story:</strong></p>
+      <p style="margin:0">\(\textcolor{#3A7CA5}{\theta} \sim \textcolor{#5B8DB8}{\text{Beta}(\alpha, \beta)}\)</p>
+      <p style="margin:6px 0 0">For \(i = 1, \ldots, n\):</p>
+      <p style="margin:2px 0 0 16px">\(x_i \mid \textcolor{#3A7CA5}{\theta} \sim \text{Bernoulli}(\textcolor{#3A7CA5}{\theta})\)</p>
+      <div class="fragment fade-up" style="margin-top:16px">
+        <p class="small color-muted">This is a <strong>plate diagram</strong> (or graphical model). Circles are random variables. Shaded = observed. The plate (rectangle) means "repeat for each \(i\)".</p>
+      </div>
+    </div>
+    <div style="flex-shrink:0">
+      <svg width="200" height="230" viewBox="0 0 200 230" style="display:block">
+        <defs>
+          <marker id="arrowPlate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#7A7A88"/>
+          </marker>
+        </defs>
+        <!-- Plate -->
+        <rect x="40" y="100" width="130" height="110" rx="8" ry="8" fill="none" stroke="#D5D3CC" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="158" y="202" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7A7A88" font-weight="600">i = 1…n</text>
+        <!-- Theta circle (latent) -->
+        <circle cx="105" cy="55" r="26" fill="#FFF" stroke="#3A7CA5" stroke-width="2.5"/>
+        <text x="105" y="62" text-anchor="middle" font-family="Crimson Pro, serif" font-size="20" fill="#3A7CA5" font-style="italic">θ</text>
+        <!-- x_i circle (observed — shaded) -->
+        <circle cx="105" cy="155" r="26" fill="#E8E6DF" stroke="#2B2B35" stroke-width="2"/>
+        <text x="101" y="160" text-anchor="middle" font-family="Crimson Pro, serif" font-size="17" fill="#2B2B35" font-style="italic">x</text>
+        <text x="117" y="166" text-anchor="middle" font-family="Crimson Pro, serif" font-size="12" fill="#2B2B35" font-style="italic">i</text>
+        <!-- Arrow θ → x_i -->
+        <line x1="105" y1="81" x2="105" y2="127" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+      </svg>
+    </div>
+  </div>
+  <aside class="notes">Let's put everything we've covered together into one picture. The generative story: θ is drawn from a Beta(α,β) prior, then each observation x_i is drawn from a Bernoulli(θ). This is a plate diagram or graphical model. Circles represent random variables — shaded means observed (we see the coin flips), unshaded means latent or unknown (we don't know θ). The plate (the dashed rectangle) means "repeat this for each i" — so there are n copies of x_i, all sharing the same θ. This compact notation will become very useful as our models get more complex.</aside>
+</section>
+
+<!-- SLIDE 22c: HIERARCHICAL EXTENSION — HYPERPRIORS -->
+<section data-background-color="#F8F6F1">
+  <h2>Going deeper: hyperpriors</h2>
+  <div style="display:flex;gap:28px;align-items:center;justify-content:center;margin-top:8px;flex-wrap:wrap">
+    <div style="text-align:left;font-size:0.78em;min-width:240px">
+      <p style="margin:0 0 6px">We treated \(\alpha, \beta\) as fixed. But what if we're uncertain about them too?</p>
+      <div class="fragment fade-up" style="margin-top:8px">
+        <p style="margin:0">\(\alpha \sim p(\alpha)\) &nbsp; <span class="color-muted">— e.g., Gamma</span></p>
+        <p style="margin:4px 0">\(\beta \sim p(\beta)\)</p>
+        <p style="margin:4px 0">\(\textcolor{#3A7CA5}{\theta} \sim \textcolor{#5B8DB8}{\text{Beta}(\alpha, \beta)}\)</p>
+        <p style="margin:4px 0">For \(i = 1, \ldots, n\):</p>
+        <p style="margin:0 0 0 16px">\(x_i \mid \textcolor{#3A7CA5}{\theta} \sim \text{Bernoulli}(\textcolor{#3A7CA5}{\theta})\)</p>
+      </div>
+      <div class="fragment fade-up" style="margin-top:12px">
+        <p class="small">Now the data can inform \(\alpha\) and \(\beta\) too — they are random variables with their own priors. This is a <strong>hierarchical Bayesian model</strong>.</p>
+        <p class="small color-muted" style="margin-top:6px">The deeper you go, the less sensitive the model is to your initial assumptions — the data "speaks for itself" at every level.</p>
+      </div>
+    </div>
+    <div style="flex-shrink:0">
+      <svg width="200" height="300" viewBox="0 0 200 300" style="display:block">
+        <!-- Plate -->
+        <rect x="35" y="180" width="130" height="105" rx="8" ry="8" fill="none" stroke="#D5D3CC" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="153" y="277" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7A7A88" font-weight="600">i = 1…n</text>
+        <!-- Alpha circle -->
+        <circle cx="65" cy="35" r="22" fill="#FFF" stroke="#5B8DB8" stroke-width="2"/>
+        <text x="65" y="42" text-anchor="middle" font-family="Crimson Pro, serif" font-size="16" fill="#5B8DB8" font-style="italic">α</text>
+        <!-- Beta circle -->
+        <circle cx="135" cy="35" r="22" fill="#FFF" stroke="#5B8DB8" stroke-width="2"/>
+        <text x="135" y="42" text-anchor="middle" font-family="Crimson Pro, serif" font-size="16" fill="#5B8DB8" font-style="italic">β</text>
+        <!-- Theta circle -->
+        <circle cx="100" cy="125" r="26" fill="#FFF" stroke="#3A7CA5" stroke-width="2.5"/>
+        <text x="100" y="132" text-anchor="middle" font-family="Crimson Pro, serif" font-size="20" fill="#3A7CA5" font-style="italic">θ</text>
+        <!-- x_i circle (observed) -->
+        <circle cx="100" cy="232" r="26" fill="#E8E6DF" stroke="#2B2B35" stroke-width="2"/>
+        <text x="96" y="237" text-anchor="middle" font-family="Crimson Pro, serif" font-size="17" fill="#2B2B35" font-style="italic">x</text>
+        <text x="112" y="243" text-anchor="middle" font-family="Crimson Pro, serif" font-size="12" fill="#2B2B35" font-style="italic">i</text>
+        <!-- Arrows -->
+        <line x1="75" y1="56" x2="92" y2="98" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+        <line x1="125" y1="56" x2="108" y2="98" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+        <line x1="100" y1="151" x2="100" y2="204" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+      </svg>
+    </div>
+  </div>
+  <aside class="notes">We treated α and β as fixed — squares in the plate diagram. But what if we're uncertain about our prior parameters too? We can put priors on them (hyperpriors), turning the squares into circles. Now the data can inform α and β as well — this is a hierarchical Bayesian model. The deeper you go, the less sensitive the model is to your initial assumptions. This is one of the great strengths of Bayesian modeling: you can express uncertainty at every level of the model, and the data informs all of it. Another powerful extension: if you had J different coins, each with their own θ_j but sharing α and β, the coins that have been flipped more would inform the shared hyperparameters, which in turn help estimate θ for coins with fewer flips — this is called "borrowing strength" or partial pooling.</aside>
+</section>
+
+<!-- SLIDE 22d: PER-ITEM LATENT VARIABLES — EXAM EXAMPLE -->
+<section data-background-color="#F8F6F1">
+  <h2>Per-observation latent variables</h2>
+  <div style="display:flex;gap:24px;align-items:center;justify-content:center;margin-top:8px;flex-wrap:wrap">
+    <div style="text-align:left;font-size:0.78em;min-width:260px">
+      <p style="margin:0 0 6px">Consider \(n\) students taking an exam. Each student \(j\) has a latent <em>ability</em> \(z_j\) that we don't observe:</p>
+      <div class="fragment fade-up" style="margin-top:8px">
+        <p style="margin:0">\(\textcolor{#3A7CA5}{\theta}\) — exam difficulty &nbsp;<span class="color-muted small">(shared)</span></p>
+        <p style="margin:4px 0">For \(j = 1, \ldots, n\):</p>
+        <p style="margin:2px 0 0 16px">\(\textcolor{#C2566E}{z_j} \sim p(z)\) &nbsp; <span class="color-muted small">— student ability</span></p>
+        <p style="margin:2px 0 0 16px">\(x_j \mid \textcolor{#C2566E}{z_j}, \textcolor{#3A7CA5}{\theta} \sim p(x \mid \textcolor{#C2566E}{z_j}, \textcolor{#3A7CA5}{\theta})\) &nbsp; <span class="color-muted small">— observed score</span></p>
+      </div>
+      <div class="fragment fade-up" style="margin-top:12px">
+        <p class="small">Now the latent variable \(\textcolor{#C2566E}{z_j}\) is <em>inside</em> the plate — one per student. We observe scores \(x_j\) but not abilities \(z_j\). This structure will reappear in GMMs, where each data point has its own latent variable indicating which component generated it.</p>
+      </div>
+    </div>
+    <div class="fragment fade-up" style="flex-shrink:0">
+      <svg width="200" height="250" viewBox="0 0 200 250" style="display:block">
+        <!-- Plate -->
+        <rect x="55" y="65" width="130" height="170" rx="8" ry="8" fill="none" stroke="#D5D3CC" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="173" y="228" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7A7A88" font-weight="600">j = 1…n</text>
+        <!-- theta (outside plate) -->
+        <circle cx="40" cy="30" r="22" fill="#FFF" stroke="#3A7CA5" stroke-width="2.5"/>
+        <text x="40" y="37" text-anchor="middle" font-family="Crimson Pro, serif" font-size="18" fill="#3A7CA5" font-style="italic">θ</text>
+        <!-- z_j (latent — white, inside plate) -->
+        <circle cx="120" cy="115" r="22" fill="#FFF" stroke="#C2566E" stroke-width="2"/>
+        <text x="116" y="120" text-anchor="middle" font-family="Crimson Pro, serif" font-size="15" fill="#C2566E" font-style="italic">z</text>
+        <text x="131" y="125" text-anchor="middle" font-family="Crimson Pro, serif" font-size="10" fill="#C2566E" font-style="italic">j</text>
+        <!-- x_j (observed — shaded, inside plate) -->
+        <circle cx="120" cy="195" r="24" fill="#E8E6DF" stroke="#2B2B35" stroke-width="2"/>
+        <text x="116" y="200" text-anchor="middle" font-family="Crimson Pro, serif" font-size="16" fill="#2B2B35" font-style="italic">x</text>
+        <text x="131" y="206" text-anchor="middle" font-family="Crimson Pro, serif" font-size="11" fill="#2B2B35" font-style="italic">j</text>
+        <!-- Arrows -->
+        <line x1="120" y1="137" x2="120" y2="169" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+        <line x1="58" y1="42" x2="104" y2="100" stroke="#7A7A88" stroke-width="1.5" marker-end="url(#arrowPlate)"/>
+      </svg>
+    </div>
+  </div>
+  <aside class="notes">Here's a different kind of model: one where each observation has its own latent variable. Imagine n students taking an exam. The exam has a shared difficulty parameter θ, but each student j has a latent ability z_j that we don't observe. We see the scores x_j but not the abilities. In the plate diagram, z_j is now inside the plate alongside x_j — one latent variable per observation. This is the exact same structure we'll see in Gaussian Mixture Models, where z_i indicates which component generated data point x_i. The challenge of inference in these models — figuring out the latent variables when you only see the observations — is what will motivate the EM algorithm.</aside>
+</section>
+
+
+
+</div></div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+// ── Math helpers ──
+function lnGamma(z){if(z<.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lnGamma(1-z);z-=1;var c=[.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];var x=c[0];for(var i=1;i<9;i++)x+=c[i]/(z+i);var t=z+7.5;return .5*Math.log(2*Math.PI)+(z+.5)*Math.log(t)-t+Math.log(x)}
+function betaPdf(x,a,b){if(x<=0||x>=1)return 0;var lnB=lnGamma(a)+lnGamma(b)-lnGamma(a+b);return Math.exp((a-1)*Math.log(x)+(b-1)*Math.log(1-x)-lnB)}
+function betaMean(a,b){return a/(a+b)}
+function betaMode(a,b){if(a>1&&b>1)return(a-1)/(a+b-2);if(a<=1&&b>1)return 0;if(a>1&&b<=1)return 1;return .5}
+var COL={theta:'#3A7CA5',like:'#D4853A',prior:'#5B8DB8',post:'#C2566E',heads:'#E8A838',tails:'#6BA3C7',muted:'#B0B0B8',grid:'#E8E6DF',text:'#2B2B35'};
+
+function setupCanvas(id){var canvas=document.getElementById(id);if(!canvas)return null;var ctx=canvas.getContext('2d');var w=parseInt(canvas.style.width)||canvas.width;var h=parseInt(canvas.style.height)||canvas.height;var dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);return{ctx:ctx,w:w,h:h}}
+function rRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+
+// ── Monotonic log chart ──
+function drawMonoChart(){var c=setupCanvas('mono-canvas');if(!c)return;var ctx=c.ctx,W=c.w,H=c.h;var pad={l:50,r:20,t:28,b:30};var cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+var N=200,fV=[],lV=[],mF=0,mL=-Infinity,mnL=Infinity;
+for(var i=0;i<=N;i++){var x=.01+(i/N)*.98;var f=Math.pow(x,7)*Math.pow(1-x,3);var lf=7*Math.log(x)+3*Math.log(1-x);fV.push(f);lV.push(lf);if(f>mF)mF=f;if(lf>mL)mL=lf;if(lf<mnL)mnL=lf}
+if(mnL<mL-20)mnL=mL-20;
+function panel(ox,vals,mn,mx,label,col){var pw=(cw-30)/2;rRect(ctx,ox,pad.t-6,pw+6,ch+12,6);ctx.fillStyle='#FFF';ctx.fill();ctx.strokeStyle=COL.grid;ctx.lineWidth=1;ctx.stroke();
+ctx.fillStyle=COL.text;ctx.font='600 12px "Source Sans 3",sans-serif';ctx.textAlign='center';ctx.fillText(label,ox+pw/2+3,pad.t+8);
+ctx.fillStyle=COL.muted;ctx.font='10px "IBM Plex Mono",monospace';for(var j=0;j<=4;j++)ctx.fillText((j/4).toFixed(1),ox+3+(j/4)*pw,pad.t+ch+12);
+var rng=mx-mn;if(rng<=0)return;ctx.beginPath();for(var i2=0;i2<=N;i2++){var x2=ox+3+(i2/N)*pw;var y2=pad.t+ch-4-((vals[i2]-mn)/rng)*(ch-18);if(i2===0)ctx.moveTo(x2,y2);else ctx.lineTo(x2,y2)}ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.stroke();
+var mx2=ox+3+((.7-.01)/.98)*pw;ctx.beginPath();ctx.moveTo(mx2,pad.t+14);ctx.lineTo(mx2,pad.t+ch-4);ctx.strokeStyle=COL.theta;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle=COL.theta;ctx.font='600 10px "IBM Plex Mono",monospace';ctx.fillText('θ*',mx2,pad.t+13)}
+panel(pad.l,fV,0,mF*1.05,'f(θ) = θ⁷(1−θ)³',COL.like);
+panel(pad.l+(cw-30)/2+30,lV,mnL,mL*1.02,'log f(θ)','#8B6914')}
+
+// ── Likelihood explorer ──
+function drawLikelihood(){var c=setupCanvas('like-canvas');if(!c)return;var ctx=c.ctx,W=c.w,H=c.h;
+var k=+document.getElementById('like-k').value,n=+document.getElementById('like-n').value;
+if(k>n){k=n;document.getElementById('like-k').value=n}document.getElementById('like-k').max=n;
+document.getElementById('like-k-val').textContent=k;document.getElementById('like-n-val').textContent=n;
+var mle=n>0?k/n:0;document.getElementById('like-mle').textContent=mle.toFixed(3);document.getElementById('like-heads').textContent=k;document.getElementById('like-tails').textContent=n-k;
+var pad={l:55,r:30,t:30,b:40},pW=(W-pad.l-pad.r)/2-15,ch=H-pad.t-pad.b,NN=300;
+var lV=[],llV=[],mxL=0,mxLL=-Infinity,mnLL=Infinity;
+for(var i=0;i<=NN;i++){var th=i/NN;var lk=0;if(th===0)lk=k===0?1:0;else if(th===1)lk=k===n?1:0;else lk=Math.pow(th,k)*Math.pow(1-th,n-k);lV.push(lk);if(lk>mxL)mxL=lk;
+var ll=-Infinity;if(th>0&&th<1){ll=0;if(k>0)ll+=k*Math.log(th);if(n-k>0)ll+=(n-k)*Math.log(1-th)}llV.push(ll);if(isFinite(ll)&&ll>mxLL)mxLL=ll;if(isFinite(ll)&&ll<mnLL)mnLL=ll}
+if(mnLL<mxLL-30)mnLL=mxLL-30;
+function panel(ox,vals,mn,mx,title,isLog){rRect(ctx,ox,pad.t-10,pW+10,ch+20,8);ctx.fillStyle='#FFF';ctx.fill();ctx.strokeStyle=COL.grid;ctx.lineWidth=1;ctx.stroke();
+ctx.fillStyle=COL.text;ctx.font='600 13px "Source Sans 3",sans-serif';ctx.textAlign='center';ctx.fillText(title,ox+pW/2+5,pad.t+4);
+ctx.strokeStyle=COL.grid;ctx.lineWidth=.5;for(var j=0;j<=4;j++){var xx=ox+5+(j/4)*pW;ctx.beginPath();ctx.moveTo(xx,pad.t+16);ctx.lineTo(xx,pad.t+ch);ctx.stroke()}
+ctx.fillStyle=COL.muted;ctx.font='12px "IBM Plex Mono",monospace';ctx.textAlign='center';for(var j2=0;j2<=4;j2++)ctx.fillText((j2/4).toFixed(1),ox+5+(j2/4)*pW,pad.t+ch+16);
+ctx.fillStyle=COL.text;ctx.font='italic 14px "Crimson Pro",serif';ctx.fillText('θ',ox+pW/2+5,pad.t+ch+34);
+var rng=mx-mn;if(rng<=0)return;ctx.beginPath();var st=false;for(var i2=0;i2<=NN;i2++){var x2=ox+5+(i2/NN)*pW,v=vals[i2];if(!isFinite(v)||(isLog&&v<mn)){st=false;continue}var y2=pad.t+ch-((v-mn)/rng)*(ch-20);if(!st){ctx.moveTo(x2,y2);st=true}else ctx.lineTo(x2,y2)}ctx.strokeStyle=COL.like;ctx.lineWidth=2.5;ctx.stroke();
+ctx.lineTo(ox+5+pW,pad.t+ch);ctx.lineTo(ox+5,pad.t+ch);ctx.closePath();ctx.fillStyle='rgba(212,133,58,0.08)';ctx.fill();
+if(mle>=0&&mle<=1){var mx2=ox+5+mle*pW;ctx.beginPath();ctx.moveTo(mx2,pad.t+16);ctx.lineTo(mx2,pad.t+ch);ctx.strokeStyle=COL.theta;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle=COL.theta;ctx.font='600 12px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.fillText('MLE='+mle.toFixed(2),mx2,pad.t+15)}}
+panel(pad.l,lV,0,mxL*1.05,'Likelihood  L(θ | D)',false);panel(pad.l+pW+30,llV,mnLL,mxLL*1.02,'Log-likelihood  ℓ(θ | D)',true)}
+
+// ── Beta distribution explorer ──
+function drawBeta(){var c=setupCanvas('beta-canvas');if(!c)return;var ctx=c.ctx,W=c.w,H=c.h;
+var a=+document.getElementById('beta-alpha').value,b=+document.getElementById('beta-beta').value;
+document.getElementById('beta-alpha-val').textContent=a.toFixed(1);document.getElementById('beta-beta-val').textContent=b.toFixed(1);
+document.getElementById('beta-mean').textContent=betaMean(a,b).toFixed(3);document.getElementById('beta-mode').textContent=(a>1&&b>1)?betaMode(a,b).toFixed(3):'—';document.getElementById('beta-pseudo').textContent=(Math.max(0,a-1)+Math.max(0,b-1)).toFixed(0);
+var gH=Math.max(0,Math.round(a-1)),gT=Math.max(0,Math.round(b-1)),gr=document.getElementById('ghost-coin-row'),html='',ms=20;
+for(var gi=0;gi<Math.min(gH,ms);gi++)html+='<div class="coin heads ghost" style="width:32px;height:32px;font-size:12px"><div class="coin-inner" style="width:22px;height:22px">H</div></div>';
+for(var gj=0;gj<Math.min(gT,ms);gj++)html+='<div class="coin tails ghost" style="width:32px;height:32px;font-size:12px"><div class="coin-inner" style="width:22px;height:22px">T</div></div>';
+if(gH>ms||gT>ms)html+='<span class="small color-muted">…</span>';if(gH===0&&gT===0)html='<span class="small color-muted" style="font-style:italic">α=1, β=1 → flat/uninformative prior</span>';gr.innerHTML=html;
+var pad={l:50,r:20,t:16,b:36},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+rRect(ctx,pad.l-8,pad.t-6,cw+16,ch+12,8);ctx.fillStyle='#FFF';ctx.fill();ctx.strokeStyle=COL.grid;ctx.lineWidth=1;ctx.stroke();
+var NN=300,vals=[],mV=0;for(var i=0;i<=NN;i++){var x=i/NN,v=betaPdf(x,a,b);vals.push(v);if(isFinite(v)&&v>mV)mV=v}mV=Math.max(mV,.1)*1.08;
+ctx.strokeStyle=COL.grid;ctx.lineWidth=.5;for(var j=0;j<=4;j++){var xx=pad.l+(j/4)*cw;ctx.beginPath();ctx.moveTo(xx,pad.t);ctx.lineTo(xx,pad.t+ch);ctx.stroke()}
+ctx.fillStyle=COL.muted;ctx.font='12px "IBM Plex Mono",monospace';ctx.textAlign='center';for(var j2=0;j2<=4;j2++)ctx.fillText((j2/4).toFixed(1),pad.l+(j2/4)*cw,pad.t+ch+18);
+ctx.font='italic 14px "Crimson Pro",serif';ctx.fillStyle=COL.text;ctx.fillText('θ',pad.l+cw/2,pad.t+ch+34);
+ctx.beginPath();ctx.moveTo(pad.l,pad.t+ch);for(var i2=0;i2<=NN;i2++){ctx.lineTo(pad.l+(i2/NN)*cw,pad.t+ch-(Math.min(vals[i2],mV)/mV)*ch)}ctx.lineTo(pad.l+cw,pad.t+ch);ctx.closePath();ctx.fillStyle='rgba(91,141,184,0.12)';ctx.fill();
+ctx.beginPath();for(var i3=0;i3<=NN;i3++){var x3=pad.l+(i3/NN)*cw,y3=pad.t+ch-(Math.min(vals[i3],mV)/mV)*ch;if(i3===0)ctx.moveTo(x3,y3);else ctx.lineTo(x3,y3)}ctx.strokeStyle=COL.prior;ctx.lineWidth=3;ctx.stroke();
+var meanX=pad.l+betaMean(a,b)*cw;ctx.beginPath();ctx.moveTo(meanX,pad.t);ctx.lineTo(meanX,pad.t+ch);ctx.strokeStyle=COL.prior;ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle=COL.prior;ctx.font='600 11px "IBM Plex Mono",monospace';ctx.textAlign='center';ctx.fillText('mean',meanX,pad.t+10)}
+
+// ── Bayesian updating widget ──
+var bayesFlips=[];
+function drawBayes(){var c=setupCanvas('bayes-canvas');if(!c)return;var ctx=c.ctx,W=c.w,H=c.h;
+var a=+document.getElementById('bayes-alpha').value,b=+document.getElementById('bayes-beta').value;
+document.getElementById('bayes-alpha-val').textContent=a.toFixed(1);document.getElementById('bayes-beta-val').textContent=b.toFixed(1);
+var heads=bayesFlips.filter(function(f){return f}).length,tails=bayesFlips.length-heads,pa=a+heads,pb=b+tails;
+document.getElementById('b-heads').textContent=heads;document.getElementById('b-tails').textContent=tails;
+document.getElementById('b-mle').textContent=bayesFlips.length>0?(heads/bayesFlips.length).toFixed(3):'—';
+document.getElementById('b-map').textContent=(pa>1&&pb>1)?((pa-1)/(pa+pb-2)).toFixed(3):'—';
+document.getElementById('b-pmean').textContent=betaMean(pa,pb).toFixed(3);
+var cd=document.getElementById('bayes-coins'),ch2='',gh=Math.max(0,Math.round(a-1)),gt=Math.max(0,Math.round(b-1)),mg=12;
+for(var gi=0;gi<Math.min(gh,mg);gi++)ch2+='<div class="coin heads ghost" style="width:26px;height:26px;font-size:10px"><div class="coin-inner" style="width:18px;height:18px">H</div></div>';
+for(var gj=0;gj<Math.min(gt,mg);gj++)ch2+='<div class="coin tails ghost" style="width:26px;height:26px;font-size:10px"><div class="coin-inner" style="width:18px;height:18px">T</div></div>';
+if(gh>mg||gt>mg)ch2+='<span style="color:var(--text-muted);font-size:10px">…</span>';
+if((gh>0||gt>0)&&bayesFlips.length>0)ch2+='<span style="width:1px;height:22px;background:var(--muted-line);display:inline-block;margin:0 3px"></span>';
+var sf=bayesFlips.slice(-30),sk=bayesFlips.length-sf.length;if(sk>0)ch2+='<span style="color:var(--text-muted);font-size:10px">+'+sk+'…</span>';
+sf.forEach(function(h){ch2+=h?'<div class="coin heads" style="width:26px;height:26px;font-size:10px"><div class="coin-inner" style="width:18px;height:18px">H</div></div>':'<div class="coin tails" style="width:26px;height:26px;font-size:10px"><div class="coin-inner" style="width:18px;height:18px">T</div></div>'});cd.innerHTML=ch2;
+var pad={l:46,r:16,t:14,b:34},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+rRect(ctx,pad.l-6,pad.t-4,cw+12,ch+10,8);ctx.fillStyle='#FFF';ctx.fill();ctx.strokeStyle=COL.grid;ctx.lineWidth=1;ctx.stroke();
+var NN=300,prV=[],poV=[],lkV=[],mV=0;
+for(var i=0;i<=NN;i++){var x=i/NN,pv=betaPdf(x,a,b),ppv=betaPdf(x,pa,pb);prV.push(pv);poV.push(ppv);if(isFinite(pv)&&pv>mV)mV=pv;if(isFinite(ppv)&&ppv>mV)mV=ppv;
+var lk=0;if(bayesFlips.length>0&&x>0&&x<1)lk=Math.pow(x,heads)*Math.pow(1-x,tails);lkV.push(lk)}
+mV=Math.max(mV,.1)*1.08;
+if(bayesFlips.length>0){var mxLk=Math.max.apply(null,lkV);if(mxLk>0){var sc=(mV*.6)/mxLk;lkV=lkV.map(function(v){return v*sc})}}
+ctx.strokeStyle=COL.grid;ctx.lineWidth=.5;for(var j=0;j<=4;j++){var xx=pad.l+(j/4)*cw;ctx.beginPath();ctx.moveTo(xx,pad.t);ctx.lineTo(xx,pad.t+ch);ctx.stroke()}
+ctx.fillStyle=COL.muted;ctx.font='11px "IBM Plex Mono",monospace';ctx.textAlign='center';for(var j2=0;j2<=4;j2++)ctx.fillText((j2/4).toFixed(1),pad.l+(j2/4)*cw,pad.t+ch+16);
+ctx.font='italic 13px "Crimson Pro",serif';ctx.fillStyle=COL.text;ctx.fillText('θ',pad.l+cw/2,pad.t+ch+32);
+function dc(vals,col,w,dash){ctx.beginPath();for(var i2=0;i2<=NN;i2++){var x2=pad.l+(i2/NN)*cw,y2=pad.t+ch-(Math.min(vals[i2],mV)/mV)*ch;if(i2===0)ctx.moveTo(x2,y2);else ctx.lineTo(x2,y2)}ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([])}
+function fc(vals,col){ctx.beginPath();ctx.moveTo(pad.l,pad.t+ch);for(var i2=0;i2<=NN;i2++)ctx.lineTo(pad.l+(i2/NN)*cw,pad.t+ch-(Math.min(vals[i2],mV)/mV)*ch);ctx.lineTo(pad.l+cw,pad.t+ch);ctx.closePath();ctx.fillStyle=col;ctx.fill()}
+if(bayesFlips.length>0){fc(lkV,'rgba(212,133,58,0.06)');dc(lkV,COL.like,1.5,[6,3])}
+fc(prV,'rgba(91,141,184,0.1)');dc(prV,COL.prior,2.5,null);
+if(bayesFlips.length>0){fc(poV,'rgba(194,86,110,0.1)');dc(poV,COL.post,3,null)}
+ctx.font='600 11px "Source Sans 3",sans-serif';var items=[{l:'Prior',c:COL.prior}];if(bayesFlips.length>0){items.push({l:'Posterior',c:COL.post});items.push({l:'Likelihood',c:COL.like})}
+var lx=pad.l+10;items.forEach(function(it){ctx.strokeStyle=it.c;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(lx,pad.t+10);ctx.lineTo(lx+18,pad.t+10);ctx.stroke();ctx.fillStyle=it.c;ctx.textAlign='left';ctx.fillText(it.l,lx+22,pad.t+14);lx+=ctx.measureText(it.l).width+40})}
+
+// ── Init ──
+
+function drawAll(){drawMonoChart();drawLikelihood();drawBeta();drawBayes()}
+Reveal.initialize({hash:true,slideNumber:'c/t',width:960,height:700,margin:0.04,transition:'fade',transitionSpeed:'default',backgroundTransition:'fade',center:true,
+plugins:[RevealNotes],
+keyboard:{79:function(){Reveal.toggleOverview()}}
+}).then(function(){
+renderMathInElement(document.body,{delimiters:[{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false,trust:true});
+setTimeout(drawAll,300);
+Reveal.on('slidechanged',function(){setTimeout(drawAll,150)});
+['like-k','like-n'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',drawLikelihood)});
+['beta-alpha','beta-beta'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',drawBeta)});
+['bayes-alpha','bayes-beta'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',drawBayes)});
+document.getElementById('btn-heads').addEventListener('click',function(){bayesFlips.push(true);drawBayes()});
+document.getElementById('btn-tails').addEventListener('click',function(){bayesFlips.push(false);drawBayes()});
+document.getElementById('btn-random').addEventListener('click',function(){bayesFlips.push(Math.random()<.5);drawBayes()});
+document.getElementById('btn-10').addEventListener('click',function(){for(var i=0;i<10;i++)bayesFlips.push(Math.random()<.5);drawBayes()});
+document.getElementById('btn-50').addEventListener('click',function(){for(var i=0;i<50;i++)bayesFlips.push(Math.random()<.5);drawBayes()});
+document.getElementById('btn-reset').addEventListener('click',function(){bayesFlips=[];drawBayes()});
+});
+</script>
+</body>
+</html>

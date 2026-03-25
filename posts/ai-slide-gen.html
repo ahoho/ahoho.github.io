@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How to make good lecture slides with AI assistance — Alexander Hoyle</title>
+    <link rel="shortcut icon" href="/assets/img/favicon.ico">
+    <link rel="stylesheet" href="/assets/css/blog.css">
+</head>
+<body>
+
+<nav class="blog-nav">
+    <a href="/">Home</a>
+</nav>
+
+<div class="blog-container">
+
+<header class="blog-header">
+    <h1>How to make good lecture slides with AI assistance (while keeping your voice and integrity)</h1>
+    <div class="date">March 2026</div>
+</header>
+
+<article class="blog-content">
+
+<p style="font-size: 0.85rem; color: #888; font-style: italic; margin-bottom: 1.5rem;"><strong>Disclaimer of AI (non-)use:</strong> The writing in this blog is mine. Claude caught a half-dozen typos and built the CSS+HTML from my draft.</p>
+
+<p>As a postdoc this semester, I've started to take on more teaching as a way of easing myself into a future faculty role (updates on this soon!) and have needed to create some new lecture material.</p>
+
+<p>Confronted with a problem on the computer in 2026, the natural question is: can I get an LLM to solve it? Yet while many people, including (or especially?) academics, are using AI assistants for all parts of their job (including much I reckon they should not be used for), my impression is that most are still making their slides by hand.</p>
+
+<p>This choice is understandable, perhaps preferable. Crafting a lecture or talk is a deliberate and rather painstaking process, and I'm very particular about structure and visualizations. As with other things I'm opinionated about (namely writing), I have been mostly unsatisfied with AI-assisted slide creation: the results were too text-heavy, with either no visualizations or very poor ones.</p>
+
+<p>Of course, as with everything else, the models are improving rapidly. In addition, it's clear that some tools or workflows work better than others. This past week, I taught a lecture on Bayesian inference for the bachelor's intro to AI course at the University of Zürich, and wanted to see how far I could get with AI tooling. This post details my process and is intended to serve as a rough guide for others interested in doing the same.<sup><a href="#fn1" id="fnref1" class="footnote-ref">1</a></sup></p>
+
+<div class="tldr">
+<strong>TL;DR:</strong> AI tooling can produce high-quality lecture slides on technical subjects&mdash;they remain worse than my best effort, but are much better than the median Beamer presentation. The main added value is in creating interactive elements that would otherwise be too time-consuming to make by hand. The pipeline is simple: write your lecture notes in LaTeX/markdown, include cues for visualizations, then prompt your LLM of choice (I used Claude Opus 4.6) to create slides based on those lecture notes using <a href="https://revealjs.com/">reveal.js</a>. See  <a href="/bayesian-inference/part1-beta-binomial.html">part 1 on Bayesian inference</a> and <a href="/bayesian-inference/part2-em-gmm.html">part 2 on GMMs and EM</a>. Skip to the <a href="#epilogue">end</a> for other options I tried.
+</div>
+
+<img src="/bayesian-inference/clipart/presentation1.svg" alt="Vintage clipart of a person giving a presentation" class="clipart">
+
+<h2>How I would like to make lecture content</h2>
+
+<p>Putting together a talk or lecture, much like writing, is a way to clarify thinking and refine a narrative. A good lecture tells a story, and good stories are entertaining and coherent (see <a href="https://www.cs.jhu.edu/~jason/advice/how-to-give-a-technical-talk.html">Jason Eisner's excellent advice</a> on preparing technical talks). For pedagogical content, I try to deconstruct the logic of my own intuitions and understanding so that I can cleanly rebuild it over the course of the lecture.</p>
+
+<p>If you're anything like me, however, it is easy to get hung up on small details when building slides (like figuring out the right color for a text box), and building even a simple deck takes many hours. These distractions get in the way of constructing and considering the larger narrative. While this behavior can manifest when writing (long searches for that <em>mot juste</em>), usually I find that by working out the correct phrasing, I simultaneously clarify my thoughts (as well as build cognitive muscle). The same is not true for PowerPoint wrangling. Perfectly aligning slide elements is just a pain in the ass; it's not character-building.</p>
+
+<p>So, from my perspective&mdash;that is, one of an instructor&mdash;the ideal format for pedagogical material is the manually-written lecture note. It serves the dual purpose of making sure I understand the material myself and of communicating it to others. I suspect this preference holds true for other educators and explains the lecture note's persistence and ubiquity.<sup><a href="#fn2" id="fnref2" class="footnote-ref">2</a></sup></p>
+
+<p>The downside of lecture notes is that they are not necessarily the ideal format for the lecture itself. Yes, you could emulate my undergrad math professors, and read off the lecture notes while copying them on the chalkboard (to be then copied again by the students). And there remains a deep appeal for this format&mdash;for instance, it gives students the time to internalize complex derivations. But there are limitations: you're bottlenecked by the speed (and legibility) of your writing, and you still have to rely on slides (or natural artistic talent) for visuals.</p>
+
+<p>Ideally, I want to write lecture notes first and have slides that follow that structure, meaning that my voice is retained throughout. While automatic creation of the slides wholesale would cheat me (and the audience) out of the deep understanding necessary to deliver a good lecture, fully manual creation can be extremely time-consuming.</p>
+
+<p>I've tried using LLMs to create PowerPoint files (both with Claude and with Copilot), and was left a bit cold (see <a href="#epilogue">the end</a> for some results, which are better than my previous experience a few months ago). The slides were mostly serviceable, but contained too much text and were rather sterile (they still struggle to make equations). I also suspect that directly crafting pptx XML is not an easy task,<sup><a href="#fn3" id="fnref3" class="footnote-ref">3</a></sup> and presumably high-quality pptx files are not well-attested in the training data (<a href="https://diverdi.colostate.edu/all_courses/ oral presentations - communication and style/cognitive_style_of_powerpoint_tufte.pdf">most PowerPoints</a> <a href="https://norvig.com/Gettysburg/">are awful</a> to begin with, and good ones are mostly proprietary). Yes, the capabilities are improving every day, but are AI-generated PowerPoints something we even want?</p>
+
+<img src="/bayesian-inference/clipart/computer.svg" alt="Vintage clipart of a computer" class="clipart">
+
+<h2>My solution: playing to LLMs' strengths</h2>
+
+<p>LLMs see trillions of tokens of web data and can generate high-quality visualizations using various JavaScript frameworks.<sup><a href="#fn4" id="fnref4" class="footnote-ref">4</a></sup> I use them to make graphs for papers, interactive tooling, etc. While they struggle with some tasks&mdash;namely abstract diagrams&mdash;they are often extremely capable.</p>
+
+<p>The remaining issue, then, is how to package these into a presentation&mdash;visuals can't always stand on their own. Luckily, I recently came across a simple solution: <a href="https://revealjs.com/">reveal.js</a>, a fully open "HTML presentation framework" (h/t to <a href="https://github.com/uchicago-nlp-course/winter2026-lectures">Chenhao Tan</a>, who recently shared his NLP lecture materials on BlueSky).</p>
+
+<p>While the reveal.js syntax seems simple enough, I wasn't that keen to learn and write it myself. Of course, there's an easy way around this problem now:</p>
+
+<blockquote>
+<p>I'm hoping to do something a little bit different with a lecture. I have some latex notes, and I want to make them into slides with nice interactive elements/animations. For instance, I'd like to illustrate the beta-binomial using coin flips, with "ghost coins" for alpha and beta priors and density plots for the prior / likelihood / posterior. I have heard of the <a href="https://revealjs.com/">revealjs.com</a> framework, which maybe is appropriate here. That way we get some built-in functionality, like using the latex as speaker notes on the slides. I'm attaching the latex, then let's go slide-by-slide and develop this?</p>
+</blockquote>
+
+<p>It took another couple hours, on and off, to achieve a result I was satisfied with (using Claude Opus 4.6 with extended thinking in the web interface; I didn't see much need for Claude Code here). That said, after the second pass it was already very good. You can view the first part on the beta-binomial <a href="/bayesian-inference/part1-beta-binomial.html">here</a> (original LaTeX <a href="/bayesian-inference/20260323-notes_on_beta_binomial.pdf">here</a>, which I proofread with Claude). The second part, on Gaussian mixture models and expectation maximization, is <a href="/bayesian-inference/part2-em-gmm.html">here</a>; it was based on some <a href="/bayesian-inference/20260323-em_and_gmms.pdf">older notes</a> and I think is slightly less successful since I didn't include visual cues in the notes.</p>
+
+<p>The interactivity is of course the real highlight and I was very satisfied with the slides overall:</p>
+
+<div class="slide-embed wide">
+    <iframe src="/bayesian-inference/part1-beta-binomial.html#/24" allowfullscreen></iframe>
+</div>
+<p style="font-size: 0.85rem; color: #888; text-align: center; margin-top: -1rem;">The deck starts at the interactive slide. To navigate from the beginning, press <kbd>G</kbd> then type <kbd>1</kbd>.</p>
+
+<p>Summarizing the lessons learned:</p>
+
+<ul>
+    <li>The LLM may skip or reorder your content, and seems to prefer fewer slides than necessary unless otherwise instructed (this is more of an issue for PPTX generation)</li>
+    <li>It also constantly skips steps in derivations, even if they're in the lecture notes.</li>
+    <li>Specify the visualizations you want to see upfront in the lecture notes (e.g. with a LaTeX tag); if you don't, the results will generally be a bit too text-heavy</li>
+    <li>It's best to have a very clear picture in mind of what you want the visualization/interactivity to be. If you don't, it may look pretty but fail to communicate the lesson(s) you want it to</li>
+    <li>While the slides are usually balanced visually, sometimes there is too much content and they need to be broken up</li>
+    <li>The model will inject its own wording, especially for slide/section titles, which I often found too cutesy/not in my voice. I had to explicitly instruct it to stick to my own wording.</li>
+    <li>I used slide numbers when asking for fixes, which usually worked, but I think the model may get confused as it requires manual counting (the resulting HTML contains comments that indicate the slide number)</li>
+    <li>Plate diagrams (and I assume SVGs generally) were generally broken initially and never looked quite right.</li>
+    <li>Minor thing: the HTML viewer for Claude doesn't play well with reveal.js, so it's best to download the file and open it in your browser</li>
+</ul>
+
+<p>Things I appreciated:</p>
+
+<ul>
+    <li>I asked to sync my lecture notes as speaker notes, and it worked great. I really appreciated this (you need to run the built-in python web server to view these, which is dead simple)</li>
+    <li>Visualizations tended to work well out of the box with no major bugs</li>
+    <li>Thanks to the reveal.js plumbing, the resulting HTML file is fairly succinct and easy to edit (interactive elements notwithstanding)</li>
+    <li>The slides themselves are very pretty and the reveal animations happen at the right points, encompassing logical blocks.</li>
+</ul>
+
+<h2>Thoughts</h2>
+
+<p>Overall, I'm happy with how things went. The one thing I wanted to avoid was to feel like an imposter reading someone else's slides. Using lecture notes that were almost entirely<sup><a href="#fn5" id="fnref5" class="footnote-ref">5</a></sup> my own, with a narrative and examples I designed, helped stave off that feeling. While the slides didn't have my personal touch (a little more on this below), I still felt a (I think justified) ownership over the content.</p>
+
+<p>The first part of the lecture on the Beta-Binomial was especially successful; the students were engaged and asked good questions, and several followed-up with additional questions during the break. I think the interactive beta-binomial was a hit and I think (hope?) it improved students' intuition.</p>
+
+<p>The main failures were attributable to teaching this class for the first time, not primarily the tech. It's a bit of a "zoo" course co-taught by several postdocs, covering broad themes in AI (roughly following <a href="https://aima.cs.berkeley.edu/">Russell and Norvig</a>). The second part of my lecture, on Gaussian mixture models and expectation maximization, is likely more fitting in an advanced undergraduate machine learning course, where maximum likelihood estimation is a consistent cornerstone. The material is rather difficult without that familiarity (it's also a four-hour block and attention waned&mdash;breaks only do so much). This issue touched on a greater problem with the slide format in general: there is little to slow you down.</p>
+
+<p>Beyond that, the other issue is that abstract visuals remain a challenge (see <a href="#gemini">notes on Gemini</a> below for a possible solution). Even simple plate diagrams proved challenging, requiring multiple iterations and never looking quite right. It could be preferable to have an LLM write TikZ code directly, compile it, and use that, or just mock it up myself.</p>
+
+<p>Anyone who has seen one of my talks also knows that I'm partial to "vintage" clipart (as has been sprinkled throughout this post). Without it, I feel the slides were a little soulless. In the future, I'll probably include these manually after&mdash;perhaps it will be worth shelling out for a <a href="https://slides.com">slides.com</a> subscription to get a WYSIWYG editor, or I just edit the HTML myself.</p>
+
+<img src="/bayesian-inference/clipart/random-clipart.svg" alt="Vintage clipart" class="clipart">
+
+<h2>Parting thoughts</h2>
+
+<p>I am new to teaching and will continue to develop a system that works for me. For instance, as I was giving the lecture and writing this piece, I was drawn back to the simplicity of the chalk-and-blackboard. There, you can easily extemporize&mdash;including more details in a derivation, making diagrams, etc. Slides lock you in to the structure and impose a steady marching pace. It may be that a hybrid approach is best&mdash;keeping the visualizations and interactivity of slides for visuals and sticking to the chalkboard for the math.</p>
+
+<p>Next time, I suspect I'll also prompt the LLM with rough diagrams (complete with clipart) alongside the notes, and ask them to be included at the appropriate points. In fact, that's what I did for this blog post, and I think it's reasonable.</p>
+
+<p>Ultimately, the belief I had when I started still holds: there is no substitute for a carefully-crafted narrative.</p>
+
+<img src="/bayesian-inference/clipart/teaching.svg" alt="Vintage clipart of teaching" class="clipart">
+
+<hr>
+
+<h2 id="epilogue">Epilogue: the other options</h2>
+
+<p>After writing up this document I decided to take a second look at some alternatives. These results are not intended to be comprehensive or even fair comparisons, but are instead based on what I already have access to / what I would expect to work (e.g., I don't have a ChatGPT subscription so left it out entirely).</p>
+
+<p><strong>Takeaway:</strong> I like my handmade slides most, but the above notes+Claude+reveal.js workflow has the best time-to-quality ratio. The other AI tools are worse.</p>
+
+<h3>Artisanal, hand-crafted slides</h3>
+
+<p>I recently put together a 20-minute RLHF lecture for a faculty interview. Treating it as an upper-bound of my slide-creation / lecturing abilities, it is (mostly) superior to the reveal.js slides: animations for derivations, several diagrams. That said, it took me roughly five times as long and covers a fifth of the time.</p>
+
+<figure>
+    <video controls preload="metadata" style="max-width:100%;">
+        <source src="/bayesian-inference/screen_recording_handmade.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <figcaption>A screen recording of my handmade RLHF lecture slides.</figcaption>
+</figure>
+
+<h3 id="gemini">Google Slides Gemini integration</h3>
+
+<p>Building on the intuition that you should play to the models' strengths, and that those strengths are a function of training data, we might expect Gemini to produce nice slides. However, the UX for the Gemini integration is extremely buggy and frustrating, and currently only produces one slide at a time. This was basically a non-starter, especially because the slides are static images and non-editable.</p>
+
+<p>That said, for specific diagrams, it works well (ignoring this static image problem). I was recently putting together some slides on a mech. interp proposal, then had Gemini write detailed prompts for diagrams that I then passed to the Slide creator integration:</p>
+
+<figure>
+    <img src="/bayesian-inference/gemini_diagram.png" alt="Gemini-generated diagram showing cross-prompt generalization in the residual stream">
+    <figcaption>A Gemini/Nano Banana-generated mech interp diagram.</figcaption>
+</figure>
+
+<p>Not bad! For whatever reason, Gemini tends to produce fairly garish / maximalist diagrams (note the 3D blocks&mdash;a big no-no in modern design languages), but I kind of like it? They're at least coherent. If Google continues to invest in this space, I think this will be quite impressive going forward.</p>
+
+<h3>PowerPoint generated by the Claude chat interface</h3>
+
+<p>The result is much better than the last time I tried this setup, perhaps because it had the lecture notes as scaffolding. In fact, had I tried this first, I may well have stuck with it.</p>
+
+<p>The slides are reasonably well-structured with a consistent, pleasant design language. Initially there were no visuals, but Claude created them after a follow-up request.<sup><a href="#fn6" id="fnref6" class="footnote-ref">6</a></sup> Weirdly, however, there are no real formulae. Everything is written in either Unicode or a kind of pseudo-LaTeX. This oversight really hurts their pedagogical utility. Perhaps I could prompt Claude to improve this (I'm assuming it would also paste in images), but I hit my session limit.</p>
+
+<figure>
+    <embed src="/bayesian-inference/Bayesian_Inference-claude_chat.pdf" type="application/pdf" class="pdf-embed">
+    <figcaption>Slides generated by the Claude chat interface. Not bad at all, but formulae are missing.</figcaption>
+</figure>
+
+<h3>PowerPoint using the Claude plugin</h3>
+
+<p>Anthropic provides a Claude plugin for PowerPoint, which makes it easy to edit the generated slides and iterate. Unfortunately, it's worse than the chat interface: no formulae, sort of ugly, and the visuals are wrong.</p>
+
+<figure>
+    <embed src="/bayesian-inference/bayesian_inference-claude_plugin.pdf" type="application/pdf" class="pdf-embed">
+    <figcaption>Slides generated by the Claude plugin for PowerPoint.</figcaption>
+</figure>
+
+<h3>Copilot Plugin</h3>
+
+<p>The most obvious choice for AI-generated PowerPoints is the built-in Copilot plugin. The problems started immediately: I couldn't figure out how to upload my notes into the chat interface (I could only choose items from my OneDrive), so I just pasted them in as text. The first iteration was by far the worst of the attempts, literally just text on the page in the default font and clearly worse than a chalkboard talk. Copilot then suggested adding visuals, which pushed some elements off the page; it also created a separate python notebook for interactivity (which I didn't bother looking at). Weirdly, Copilot makes a separate file rather than working inside the open PowerPoint window. In all, fairly disappointing&mdash;I can see that if Copilot is all you've experienced, your opinion of AI is likely pretty bad!</p>
+
+<figure>
+    <embed src="/bayesian-inference/Bayesian_Inference_Lecture_WITH_Visuals_and_Notes-copilot.pdf" type="application/pdf" class="pdf-embed">
+    <figcaption>Slides generated by Copilot. Sort of a Baby's First PowerPoint vibe here.</figcaption>
+</figure>
+
+<p><em>Further reading: I found this <a href="https://danielroelfs.com/posts/ode-to-revealjs/">ode to reveal.js</a> that covers similar ground.</em></p>
+
+</article>
+
+<!-- Footnotes -->
+<section class="footnotes">
+    <ol>
+        <li id="fn1">I'd like to emphasize at the outset that I'm a relatively inexperienced teacher. While I think my research talks are reasonably good, I have much to learn when it comes to classroom instruction. <a href="#fnref1" class="back">&uarr;</a></li>
+        <li id="fn2">Indeed, when I was a student, I wondered why people bothered to produce lecture notes and textbooks, as they seemed almost entirely altruistic and often redundant&mdash;how many explanations of object-oriented programming do you need? Now I see that it's one of the better ways to be confident in your own understanding and thus to communicate it well to others. <a href="#fnref2" class="back">&uarr;</a></li>
+        <li id="fn3">Assuming that's what these systems are doing. <a href="#fnref3" class="back">&uarr;</a></li>
+        <li id="fn4">I assume there is also a lot of specialized post-training for this purpose, since it's the kind of flashy and useful application that sells subscriptions. <a href="#fnref4" class="back">&uarr;</a></li>
+        <li id="fn5">There was a brief section on the multivariate Gaussian that Claude drafted and I edited. <a href="#fnref5" class="back">&uarr;</a></li>
+        <li id="fn6">They're all images, not PowerPoint graphs&mdash;I think Claude is calling some internal purpose-built mathematical graphing tool and pasting in static images. <a href="#fnref6" class="back">&uarr;</a></li>
+    </ol>
+</section>
+
+</div>
+
+</body>
+</html>
