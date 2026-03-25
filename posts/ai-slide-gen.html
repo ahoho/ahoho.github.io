@@ -24,13 +24,13 @@
 
 <p style="font-size: 0.85rem; color: #888; font-style: italic; margin-bottom: 1.5rem;"><strong>Disclaimer of AI (non-)use:</strong> The writing in this blog is mine. Claude caught a half-dozen typos and built the CSS+HTML from my draft.</p>
 
-<p>As a postdoc this semester, I've started to take on more teaching as a way of easing myself into a future faculty role (updates on this soon!) and have needed to create some new lecture material.</p>
+<p>As a postdoc this semester, I've started to take on more teaching as a way to ease myself into a future faculty role (updates on this soon!), and have needed to create some new lecture material.</p>
 
 <p>Confronted with a problem on the computer in 2026, the natural question is: can I get an LLM to solve it? Yet while many people, including (or especially?) academics, are using AI assistants for all parts of their job (including much I reckon they should not be used for), my impression is that most are still making their slides by hand.</p>
 
 <p>This choice is understandable, perhaps preferable. Crafting a lecture or talk is a deliberate and rather painstaking process, and I'm very particular about structure and visualizations. As with other things I'm opinionated about (namely writing), I have been mostly unsatisfied with AI-assisted slide creation: the results were too text-heavy, with either no visualizations or very poor ones.</p>
 
-<p>Of course, as with everything else, the models are improving rapidly. In addition, it's clear that some tools or workflows work better than others. This past week, I taught a lecture on Bayesian inference for the bachelor's intro to AI course at the University of Zürich, and wanted to see how far I could get with AI tooling. This post details my process and is intended to serve as a rough guide for others interested in doing the same.<sup><a href="#fn1" id="fnref1" class="footnote-ref">1</a></sup></p>
+<p>Of course, as with everything else, the models are improving rapidly at this task. In addition, it's clear that some tools or workflows work better than others. This past week, I taught a lecture on Bayesian inference for the bachelor's intro to AI course at the University of Zürich, and wanted to see how far I could get with AI tooling. This post details my process and is intended to serve as a rough guide for others interested in doing the same.<sup><a href="#fn1" id="fnref1" class="footnote-ref">1</a></sup></p>
 
 <div class="tldr">
 <strong>TL;DR:</strong> AI tooling can produce high-quality lecture slides on technical subjects&mdash;they remain worse than my best effort, but are much better than the median Beamer presentation. The main added value is in creating interactive elements that would otherwise be too time-consuming to make by hand. The pipeline is simple: write your lecture notes in LaTeX/markdown, include cues for visualizations, then prompt your LLM of choice (I used Claude Opus 4.6) to create slides based on those lecture notes using <a href="https://revealjs.com/">reveal.js</a>. See  <a href="/bayesian-inference/part1-beta-binomial.html">part 1 on Bayesian inference</a> and <a href="/bayesian-inference/part2-em-gmm.html">part 2 on GMMs and EM</a>. Skip to the <a href="#epilogue">end</a> for other options I tried.
@@ -92,13 +92,13 @@
 <p>Things I appreciated:</p>
 
 <ul>
-    <li>I asked to sync my lecture notes as speaker notes, and it worked great. I really appreciated this (you need to run the built-in python web server to view these, which is dead simple)</li>
+    <li>I asked to sync my lecture notes as speaker notes, and it worked great (you need to run the built-in python web server to view these, which is dead simple)</li>
     <li>Visualizations tended to work well out of the box with no major bugs</li>
     <li>Thanks to the reveal.js plumbing, the resulting HTML file is fairly succinct and easy to edit (interactive elements notwithstanding)</li>
     <li>The slides themselves are very pretty and the reveal animations happen at the right points, encompassing logical blocks.</li>
 </ul>
 
-<h2>Thoughts</h2>
+<h2>Reflections on the Lecture and Process</h2>
 
 <p>Overall, I'm happy with how things went. My main concern was to avoid feeling like an imposter reading someone else's slides. Using lecture notes that were almost<sup><a href="#fn5" id="fnref5" class="footnote-ref">5</a></sup> entirely my own, with a narrative and examples I designed, helped stave off that feeling. While the slides didn't have my personal touch (a little more on this below), I still felt an ownership over the content.</p>
 
@@ -112,13 +112,13 @@
 
 <img src="/bayesian-inference/clipart/random-clipart.svg" alt="Vintage clipart" class="clipart">
 
-<h2>Parting thoughts</h2>
+<h2>Parting Thoughts</h2>
 
-<p>I am new to teaching and will continue to develop a system that works for me. For instance, as I was giving the lecture and writing this piece, I was drawn back to the simplicity of the chalk-and-blackboard. There, you can easily extemporize&mdash;including more details in a derivation, making diagrams, etc. Slides lock you in to the structure and impose a steady marching pace. It may be that a hybrid approach is best&mdash;keeping the visualizations and interactivity of slides for visuals and sticking to the chalkboard for the math.</p>
+<p>I am new to teaching and will continue to develop a system that works for me. For instance, as I was giving the lecture and writing this piece, I was drawn to the simplicity of the chalk-and-blackboard. There, you can easily extemporize&mdash;including more details in a derivation, making diagrams, etc. Slides lock you in to the structure and impose a steady marching pace. It may be that a hybrid approach is best&mdash;keeping the visualizations and interactivity of slides for visuals and sticking to the chalk/whiteboard for the math.</p>
 
-<p>Next time, I suspect I'll also prompt the LLM with rough diagrams (complete with clipart) alongside the notes, and ask them to be included at the appropriate points. In fact, that's what I did for this blog post, and I think it's reasonable.</p>
+<p>Next time, I suspect I'll also prompt the LLM with rough diagrams (complete with clipart) alongside the notes, and ask them to be included at the appropriate points. In fact, that's what I did for this blog post, and I think it worked well.</p>
 
-<p>Ultimately, the belief I had when I started still holds: there is no substitute for a carefully-crafted narrative.</p>
+<p>Technical details aside, the belief I had when I started still holds: there is no substitute for a carefully-crafted narrative.</p>
 
 <img src="/bayesian-inference/clipart/teaching.svg" alt="Vintage clipart of teaching" class="clipart">
 
