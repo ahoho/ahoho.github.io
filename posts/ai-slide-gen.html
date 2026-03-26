@@ -40,7 +40,7 @@
 
 <h2>How I would like to make lecture content</h2>
 
-<p>Putting together a talk or lecture, much like writing, is a way to clarify thinking and refine a narrative. A good lecture tells a story, and good stories are entertaining and coherent (see <a href="https://www.cs.jhu.edu/~jason/advice/how-to-give-a-technical-talk.html">Jason Eisner's excellent advice</a> on preparing technical talks). For instructional content, I try to deconstruct the logic of my own intuitions and understanding so that I can cleanly rebuild it over the course of the lecture.</p>
+<p>Putting together a talk or lecture, much like writing, is a way to clarify thinking and refine a narrative. A good lecture tells a story, and good stories are entertaining and coherent (see <a href="https://www.cs.jhu.edu/~jason/advice/how-to-give-a-talk.html">Jason Eisner's excellent advice</a> on preparing technical talks). For instructional content, I try to deconstruct the logic of my own intuitions and understanding so that I can cleanly rebuild it over the course of the lecture.</p>
 
 <p>If you're anything like me, however, it is easy to get hung up on small details when building slides (like figuring out the right color for a text box), and building even a simple deck takes many hours. These distractions get in the way of constructing and considering the larger narrative. While this behavior can manifest when writing (long searches for that <em>mot juste</em>), usually I find that by working out the correct phrasing, I simultaneously clarify my thoughts (as well as build cognitive muscle). The same is not true for PowerPoint wrangling. Perfectly aligning slide elements is just a pain in the ass; it's not character-building.</p>
 
@@ -78,23 +78,23 @@
 <p>Summarizing the lessons learned:</p>
 
 <ul>
-    <li>The LLM may skip or reorder your content, and seems to prefer fewer slides than necessary unless otherwise instructed (this is more of an issue for PPTX generation)</li>
+    <li>The LLM may skip or reorder your content, and seems to prefer fewer slides than necessary unless otherwise instructed (this is more of an issue for PPTX generation).</li>
     <li>It also constantly skips steps in derivations, even if they're in the lecture notes.</li>
-    <li>Specify the visualizations you want to see upfront in the lecture notes (e.g. with a LaTeX tag); if you don't, the results will generally be a bit too text-heavy</li>
-    <li>It's best to have a very clear picture in mind of what you want the visualization/interactivity to be. If you don't, it may look pretty but fail to communicate the lesson(s) you want it to</li>
-    <li>While the slides are usually balanced visually, sometimes there is too much content and they need to be broken up</li>
+    <li>Specify the visualizations you want to see upfront in the lecture notes (e.g. with a LaTeX tag); if you don't, the results will generally be a bit too text-heavy.</li>
+    <li>It's best to have a very clear picture in mind of what you want the visualization/interactivity to be. If you don't, it may look pretty but fail to communicate the lesson(s) you want it to.</li>
+    <li>While the slides are usually balanced visually, sometimes there is too much content and they need to be broken up.</li>
     <li>The model will inject its own wording, especially for slide/section titles, which I often found too cutesy/not in my voice. I had to explicitly instruct it to stick to my own wording.</li>
-    <li>I used slide numbers when asking for fixes, which usually worked, but I think the model may get confused as it requires manual counting (the resulting HTML contains comments that indicate the slide number)</li>
+    <li>I used slide numbers when asking for fixes, which usually worked, but I think the model may get confused as it requires manual counting (the resulting HTML contains comments that indicate the slide number).</li>
     <li>Plate diagrams (and I assume SVGs generally) were generally broken initially and never looked quite right.</li>
-    <li>Minor thing: the HTML viewer for Claude doesn't play well with reveal.js, so it's best to download the file and open it in your browser</li>
+    <li>Minor thing: the HTML viewer for Claude doesn't play well with reveal.js, so it's best to download the file and open it in your browser.</li>
 </ul>
 
 <p>Things I appreciated:</p>
 
 <ul>
-    <li>I asked to sync my lecture notes as speaker notes, and it worked great (you need to run the built-in python web server to view these, which is dead simple)</li>
-    <li>Visualizations tended to work well out of the box with no major bugs</li>
-    <li>Thanks to the reveal.js plumbing, the resulting HTML file is fairly succinct and easy to edit (interactive elements notwithstanding)</li>
+    <li>I asked to sync my lecture notes as speaker notes, and it worked great (you need to run the built-in python web server to enable speaker view, which is dead simple).</li>
+    <li>Interactivity tended to work well out of the box with no major bugs.</li>
+    <li>Thanks to the reveal.js plumbing, the resulting HTML file is fairly succinct and easy to edit (interactive elements notwithstanding).</li>
     <li>The slides themselves are very pretty and the reveal animations happen at the right points, encompassing logical blocks.</li>
 </ul>
 
