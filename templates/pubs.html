@@ -9,22 +9,32 @@
     <li>
         <span class="title">{{entry.title}}<br></span>
         <span class="author">
-            {% for author in entry.author_list %}
-                {%- if author.last.rstrip('*') == last_name -%}
-                    <b>{{ author.first }} {{ author.last }}</b>
-                {%- else -%}
-                    {{ author.first }} {{ author.last }}
-                {%- endif -%}
-                {%- if not loop.last -%}
-                    {%- if loop.revindex > 2 -%}
-                        {{ ', ' }}
+            {% macro author_list_text(authors) %}
+                {%- for author in authors -%}
+                    {%- if author.last.rstrip('*') == last_name -%}
+                        <b>{{ author.first }} {{ author.last }}</b>
                     {%- else -%}
-                        {{ ' and ' }}
+                        {{ author.first }} {{ author.last }}
                     {%- endif -%}
-                {%- else -%}
-                        .
-                {%- endif -%}
-            {% endfor %}
+                    {%- if not loop.last -%}
+                        {%- if loop.revindex > 2 -%}
+                            {{ ', ' }}
+                        {%- else -%}
+                            {{ ' and ' }}
+                        {%- endif -%}
+                    {%- else -%}
+                            .
+                    {%- endif -%}
+                {%- endfor -%}
+            {% endmacro %}
+            {% if entry.author_list|length > 10 %}
+                <details class="author-collapse">
+                    <summary>Multiple authors ({{ entry.author_list|length }})</summary>
+                    {{ author_list_text(entry.author_list) }}
+                </details>
+            {% else %}
+                {{ author_list_text(entry.author_list) }}
+            {% endif %}
         </span>
         
         <span class="periodical">

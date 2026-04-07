@@ -32,6 +32,23 @@ details {
     display: inline;
 }
 
+details summary {
+    cursor: pointer;
+    color: #555;
+}
+
+details summary:hover {
+    color: #000;
+}
+
+details.author-collapse {
+    display: block;
+}
+
+details.author-collapse summary {
+    font-style: italic;
+}
+
 hr {
     margin: 0;
     border: none;
