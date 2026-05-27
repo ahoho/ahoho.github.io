@@ -132,6 +132,43 @@ body {
     margin-bottom: 0.5rem;
 }
 
+.blog-content ul.tight-list li,
+.blog-content ol.tight-list li {
+    margin-bottom: 0.1rem;
+}
+
+.blog-content ol.parens-list {
+    list-style: none;
+    counter-reset: parens-list-counter;
+    padding-left: 2em;
+}
+
+.blog-content ol.parens-list > li {
+    counter-increment: parens-list-counter;
+    position: relative;
+}
+
+.blog-content ol.parens-list > li::before {
+    content: "(" counter(parens-list-counter, lower-alpha) ")";
+    position: absolute;
+    left: -2em;
+    width: 1.5em;
+}
+
+.blog-content .gloss {
+    color: #777;
+    font-size: 0.9em;
+}
+
+.blog-content .gloss a {
+    color: inherit;
+    text-decoration-color: inherit;
+}
+
+.blog-content .gloss a:hover {
+    text-decoration-color: #555;
+}
+
 /* ---- Figures & images ---- */
 .blog-content figure {
     margin: 2rem 0;
