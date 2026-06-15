@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACL Anthology · Topic Browser</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="vendor/d3.v7.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"></span>
+      <div>
+        <h1>ACL Anthology — Topic Browser</h1>
+        <p class="sub" id="subtitle">70,514 English abstracts · 2005–2026 · LDA (tomotopy)</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" id="k-seg" role="tablist" aria-label="Number of topics"></div>
+      <span class="seg-label">seed</span>
+      <div class="seg" id="seed-seg" role="tablist" aria-label="Random seed"></div>
+      <nav class="tabs" id="tabs">
+        <button data-tab="topics" class="active">Topics</button>
+        <button data-tab="time">Over time</button>
+        <button data-tab="stability">Stability</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- TOPICS -->
+    <section id="view-topics" class="view active">
+      <aside class="topic-list-pane">
+        <div class="pane-head">
+          <span id="topic-count" class="muted"></span>
+          <label class="sortsel">sort
+            <select id="topic-sort">
+              <option value="order">aligned</option>
+              <option value="prevalence">prevalence</option>
+              <option value="stability">stability</option>
+            </select>
+          </label>
+        </div>
+        <ul id="topic-list"></ul>
+      </aside>
+
+      <div class="topic-detail" id="topic-detail">
+        <div class="empty-detail muted">Select a topic →</div>
+      </div>
+    </section>
+
+    <!-- TIME -->
+    <section id="view-time" class="view">
+      <div class="time-head">
+        <h2>Topic prevalence over time</h2>
+        <p class="muted">Mean P(topic | doc) per year. Hover a stream; click to open the topic.</p>
+      </div>
+      <div id="time-chart"></div>
+    </section>
+
+    <!-- STABILITY -->
+    <section id="view-stability" class="view">
+      <div class="stab-controls">
+        <h2>Cross-run stability</h2>
+        <p class="muted">975 topics across 4&nbsp;K × 3&nbsp;seeds. Edges = RBO+doc similarity.
+          Dense regions are stable topics. Click a canonical (seed&nbsp;42) node to open it.</p>
+        <div class="sliders">
+          <label>min stability <input type="range" id="stab-min" min="0" max="1" step="0.01" value="0.3"><span id="stab-min-v"></span></label>
+          <label>min edge <input type="range" id="edge-min" min="0" max="1" step="0.01" value="0.4"><span id="edge-min-v"></span></label>
+          <label>color by
+            <select id="stab-color"><option value="stability">stability</option><option value="k">K</option></select>
+          </label>
+        </div>
+      </div>
+      <div id="graph"></div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
