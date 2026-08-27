@@ -328,6 +328,27 @@
     abstract = "A common use of NLP is to facilitate the understanding of large document collections, with models based on Large Language Models (LLMs) replacing probabilistic topic models. Yet the effectiveness of LLM-based approaches in real-world applications remains under explored. This study measures the knowledge users acquire with topic models{---}including traditional, unsupervised and supervised LLM- based approaches{---}on two datasets. While LLM-based methods generate more human- readable topics and show higher average win probabilities than traditional models for data exploration, they produce overly generic topics for domain-specific datasets that do not easily allow users to learn much about the documents. Adding human supervision to LLM-based topic models improves data exploration by addressing hallucination and genericity but requires more human efforts. In contrast, traditional models like Latent Dirichlet Allocation (LDA) remain effective for exploration but are less user-friendly. This paper provides best practices{---}there is no one right model, the choice of models is situation-specific{---}and suggests potential improvements for scalable LLM- based topic models."
 }
 
+@inproceedings{sarkar-etal-2025-pairscale,
+    title = "PairScale: Analyzing Attitude Change with Pairwise Comparisons",
+    author = "Sarkar, Rupak  and
+      Wu, Patrick Y.  and
+      Miler, Kristina  and
+      Hoyle, Alexander  and
+      Resnik, Philip",
+    editor = "Chiruzzo, Luis  and
+      Ritter, Alan  and
+      Wang, Lu",
+    booktitle = "Findings of NAACL",
+    month = apr,
+    year = "2025",
+    address = "Albuquerque, New Mexico",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.findings-naacl.94/",
+    pages = "1722--1738",
+    ISBN = "979-8-89176-195-7",
+    abstract = "We introduce a text-based framework for measuring attitudes in communities toward issues of interest, going beyond the pro/con/neutral of conventional stance detection to characterize attitudes on a continuous scale using both implicit and explicit evidence in language. The framework exploits LLMs both to extract attitude-related evidence and to perform pairwise comparisons that yield unidimensional attitude scores via the classic Bradley-Terry model. We validate the LLM-based steps using human judgments, and illustrate the utility of the approach for social science by examining the evolution of attitudes on two high-profile issues in U.S. politics in two political communities on Reddit over the period spanning from the 2016 presidential campaign to the 2022 mid-term elections. WARNING: Potentially sensitive political content."
+}
+
 @article{sorelle-2025-express,
 author = {Gaynor, SoRelle  and Miler, Kristina and Goel, Pranav and Hoyle, Alexander  M. and Resnik, Philip},
 title = {Express Yourself (Ideologically): Legislators’ Ideal Points Across Audiences},
@@ -338,12 +359,152 @@ URL = {https://doi.org/10.1086/736360},
 eprint = {https://doi.org/10.1086/736360}
 }
 
-@inproceedings{hernandezcano-etal-2026-apertus,
-    title = "Apertus: Democratizing Open and Compliant LLMs for Global Language Environments",
-    author = "Hernández-Cano, Alejandro and Hägele, Alexander and Huang, Allen Hao and Romanou, Angelika and Solergibert, Antoni-Joan and Pásztor, Barna and Messmer, Bettina and Garbaya, Dhia and Ďurech, Eduard Frank and Hakimi, Ido and Garcia Giraldo, Juan and Ismayilzada, Mete and Foroutan, Negar and Moalla, Skander and Chen, Tiancheng and Sabolčec, Vinko and Xu, Yixuan and Aerni, Michael and AlKhamissi, Badr and Altemir Marinas, Inés and Amani, Mohammad Hossein and Ansaripour, Matin and Badanin, Ilia and Benoit, Harold and Boros, Emanuela and Browning, Nicholas John and Bösch, Fabian and Böther, Maximilian and Canova, Niklas and Challier, Camille and Charmillot, Clément and Coles, Jonathan and Deriu, Jan Milan and Devos, Arnout and Drescher, Lukas and Dzenhaliou, Daniil and Ehrmann, Maud and Fan, Dongyang and Fan, Simin and Gao, Silin and Gila, Miguel and Grandury, María and Hashemi, Diba and Hoyle, Alexander Miserlis and Jiang, Jiaming and Klein, Mark and Kucharavy, Andrei and Kucherenko, Anastasiia and Lübeck, Frederike and Machacek, Roman and Manitaras, Theofilos Ioannis and Marfurt, Andreas and Matoba, Kyle and Matrenok, Simon and Mendonça, Henrique and Mohamed, Fawzi Roberto and Montariol, Syrielle and Mouchel, Luca and Najem-Meyer, Sven and Ni, Jingwei and Oliva, Gennaro and Pagliardini, Matteo and Palme, Elia and Panferov, Andrei and Paoletti, Léo and Passerini, Marco and Pavlov, Ivan and Poiroux, Auguste and Ponkshe, Kaustubh and Ranchin, Nathan and Rando, Javier and Sauser, Mathieu and Saydaliev, Jakhongir and Sayfiddinov, Mukhammadali and Schneider, Marian and Schuppli, Stefano and Scialanga, Marco and Semenov, Andrei and Shridhar, Kumar and Singhal, Raghav and Sotnikova, Anna and Sternfeld, Alexander and Tarun, Ayush Kumar and Teiletche, Paul and Vamvas, Jannis and Yao, Xiaozhe and Zhao, Hao and Ilic, Alexander and Klimovic, Ana and Krause, Andreas and Gulcehre, Caglar and Rosenthal, David and Ash, Elliott and Tramèr, Florian and VandeVondele, Joost and Veraldi, Livio and Rajman, Martin and Schulthess, Thomas C. and Hoefler, Torsten and Bosselut, Antoine and Jaggi, Martin and Schlag, Imanol",
-    booktitle = "ACL",
+
+@inproceedings{kohler-etal-2026-read,
+    title = "Read the Paper, Write the Code: Agentic Reproduction of Social-Science Results",
+    author = "Kohler, Benjamin  and
+      Zollikofer, David  and
+      Einsiedler, Johanna  and
+      Hoyle*, Alexander  and
+      Ash*, Elliott",
+    booktitle = "EMNLP",
     year = "2026",
+    url = "https://arxiv.org/abs/2604.21965",
+    abstract = "Recent work has used LLM agents to reproduce empirical social science results with access to both the data and code. We broaden this scope by asking: Can they reproduce results given only a paper's methods description and original data? We develop an agentic reproduction system that extracts structured methods descriptions from papers, runs reimplementations under strict information isolation---agents never see the original code, results, or paper---and enables deterministic, cell-level comparison of reproduced outputs to the original results. An error attribution step traces discrepancies through the system chain to identify root causes. Evaluating four agent scaffolds and four LLMs on 48 papers with human-verified reproducibility, we find that agents can largely recover published results, but performance varies substantially between models, scaffolds, and papers. Root cause analysis reveals that failures stem both from agent errors and from underspecification in the papers themselves.",
 }
+
+
+@inproceedings{du-etal-2026-legibility,
+    title = "Legibility is Not Interpretability: Comparing Judged and Actual Importance in Chain-of-Thought Reasoning",
+    author = "Du, Kevin  and
+      Hoyle, Alexander  and
+      Ruis, Laura  and
+      Locatelli, Acyr",
+    booktitle = "COLM",
+    year = "2026",
+    url = "https://openreview.net/forum?id=Qhex5RJmzs",
+}
+
+@inproceedings{hernandez-cano-etal-2026-apertus,
+    title = "Apertus: Democratizing Open and Compliant {LLM}s for Global Language Environments",
+    author = {Hern{\'a}ndez-Cano, Alejandro  and
+      H{\"a}gele, Alexander  and
+      Huang, Allen Hao  and
+      Romanou, Angelika  and
+      Solergibert, Antoni-Joan  and
+      P{\'a}sztor, Barna  and
+      Messmer, Bettina  and
+      Garbaya, Dhia  and
+      {\v{D}}urech, Eduard Frank  and
+      Hakimi, Ido  and
+      Giraldo, Juan Garcia  and
+      Ismayilzada, Mete  and
+      Foroutan, Negar  and
+      Moalla, Skander  and
+      Chen, Tiancheng  and
+      Sabol{\v{c}}ec, Vinko  and
+      Xu, Yixuan  and
+      Aerni, Michael  and
+      AlKhamissi, Badr  and
+      Marinas, In{\'e}s Altemir  and
+      Amani, Mohammad Hossein  and
+      Ansaripour, Matin  and
+      Badanin, Ilia  and
+      Benoit, Harold  and
+      Boros, Emanuela  and
+      Browning, Nicholas John  and
+      B{\"o}sch, Fabian  and
+      B{\"o}ther, Maximilian  and
+      Canova, Niklas  and
+      Challier, Camille  and
+      Charmillot, Cl{\'e}ment  and
+      Coles, Jonathan  and
+      Deriu, Jan Milan  and
+      Devos, Arnout  and
+      Drescher, Lukas  and
+      Dzenhaliou, Daniil  and
+      Ehrmann, Maud  and
+      Fan, Dongyang  and
+      Fan, Simin  and
+      Gao, Silin  and
+      Gila, Miguel  and
+      Grandury, Mar{\'i}a  and
+      Hashemi, Diba  and
+      Hoyle, Alexander Miserlis  and
+      Jiang, Jiaming  and
+      Klein, Mark  and
+      Kucharavy, Andrei  and
+      Kucherenko, Anastasiia  and
+      L{\"u}beck, Frederike  and
+      Machacek, Roman  and
+      Manitaras, Theofilos Ioannis  and
+      Marfurt, Andreas  and
+      Matoba, Kyle  and
+      Matrenok, Simon  and
+      Mendon{\c{c}}a, Henrique  and
+      Mohamed, Fawzi Roberto  and
+      Montariol, Syrielle  and
+      Mouchel, Luca  and
+      Najem-Meyer, Sven  and
+      Ni, Jingwei  and
+      Oliva, Gennaro  and
+      Pagliardini, Matteo  and
+      Palme, Elia  and
+      Panferov, Andrei  and
+      Paoletti, L{\'e}o  and
+      Passerini, Marco  and
+      Pavlov, Ivan  and
+      Poiroux, Auguste  and
+      Ponkshe, Kaustubh  and
+      Ranchin, Nathan  and
+      Rando, Javier  and
+      Sauser, Mathieu  and
+      Saydaliev, Jakhongir  and
+      Sayfiddinov, Mukhammadali  and
+      Schneider, Marian  and
+      Schuppli, Stefano  and
+      Scialanga, Marco  and
+      Semenov, Andrei  and
+      Shridhar, Kumar  and
+      Singhal, Raghav  and
+      Sotnikova, Anna  and
+      Sternfeld, Alexander  and
+      Tarun, Ayush Kumar  and
+      Teiletche, Paul  and
+      Vamvas, Jannis  and
+      Yao, Xiaozhe  and
+      Zhao, Hao  and
+      Ilic, Alexander  and
+      Klimovic, Ana  and
+      Krause, Andreas  and
+      Gulcehre, Caglar  and
+      Rosenthal, David  and
+      Ash, Elliott  and
+      Tram{\`e}r, Florian  and
+      VandeVondele, Joost  and
+      Veraldi, Livio  and
+      Rajman, Martin  and
+      Schulthess, Thomas C.  and
+      Hoefler, Torsten  and
+      Bosselut, Antoine  and
+      Jaggi, Martin  and
+      Schlag, Imanol},
+    editor = "Liakata, Maria  and
+      Moreira, Viviane P.  and
+      Zhang, Jiajun  and
+      Jurgens, David",
+    booktitle = "Proceedings of the 64th Annual Meeting of the {A}ssociation for {C}omputational {L}inguistics (Volume 1: Long Papers)",
+    month = jul,
+    year = "2026",
+    address = "San Diego, California, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2026.acl-long.2172/",
+    doi = "10.18653/v1/2026.acl-long.2172",
+    pages = "46877--46955",
+    ISBN = "979-8-89176-390-6",
+    abstract = "Open LLMs enable AI practitioners to control development costs by building on an existing foundation for downstream applications. While offering substantial promise, current models often fail to meet the needs of users needing open solutions aligned with responsible AI principles, including data compliance, transparency, and inclusivity. In this work, we present Apertus, a fully open suite of large language models (LLMs) designed to address responsibility shortcomings in today{'}s open model ecosystem, namely data responsibility and global representation. Unlike many prior models that release weights without reproducible data pipelines or regard for content-owner rights, Apertus models are pretrained exclusively on openly available data, retroactively respecting robots.txt exclusions and filtering for non-permissive, toxic, and personally identifiable content. To mitigate risks of data memorization, we also adopt the Goldfish objective during pretraining, strongly suppressing verbatim recall of data while retaining downstream task performance. Apertus also drastically expands multilingual coverage, training on 15T tokens from over approximately 1800 languages, with about 40{\%} of pretraining data allocated to non-English content. Released at 8B and 70B scales, Apertus approaches state-of-the-art results among fully open models on multilingual benchmarks, rivaling or surpassing open-weight counterparts."
+}
+
 
 @inproceedings{ni-etal-2026-reasoning,
     title = "Can Reasoning Help Large Language Models Capture Human Annotator Disagreement?",
@@ -369,49 +530,4 @@ eprint = {https://doi.org/10.1086/736360}
     pages = "36--54",
     ISBN = "979-8-89176-380-7",
     abstract = "Variation in human annotation (i.e., disagreements) is common in NLP, often reflecting important information like task subjectivity and sample ambiguity. Modeling this variation is important for applications that are sensitive to such information. Although RLVR-style reasoning (Reinforcement Learning with Verifiable Rewards) has improved Large Language Model (LLM) performance on many tasks, it remains unclear whether such reasoning enables LLMs to capture informative variation in human annotation. In this work, we evaluate the influence of different reasoning settings on LLM disagreement modeling. We systematically evaluate each reasoning setting across model sizes, distribution expression methods, and steering methods, resulting in 60 experimental setups across 3 tasks. Surprisingly, our results show that RLVR-style reasoning degrades performance in disagreement modeling, while naive Chain-of-Thought (CoT) reasoning improves the performance of RLHF LLMs (RL from human feedback). These findings underscore the potential risk of replacing human annotators with reasoning LLMs, especially when disagreements are important."
-}
-
-@inproceedings{sarkar-etal-2025-pairscale,
-    title = "PairScale: Analyzing Attitude Change with Pairwise Comparisons",
-    author = "Sarkar, Rupak  and
-      Wu, Patrick Y.  and
-      Miler, Kristina  and
-      Hoyle, Alexander  and
-      Resnik, Philip",
-    editor = "Chiruzzo, Luis  and
-      Ritter, Alan  and
-      Wang, Lu",
-    booktitle = "Findings of NAACL",
-    month = apr,
-    year = "2025",
-    address = "Albuquerque, New Mexico",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/2025.findings-naacl.94/",
-    pages = "1722--1738",
-    ISBN = "979-8-89176-195-7",
-    abstract = "We introduce a text-based framework for measuring attitudes in communities toward issues of interest, going beyond the pro/con/neutral of conventional stance detection to characterize attitudes on a continuous scale using both implicit and explicit evidence in language. The framework exploits LLMs both to extract attitude-related evidence and to perform pairwise comparisons that yield unidimensional attitude scores via the classic Bradley-Terry model. We validate the LLM-based steps using human judgments, and illustrate the utility of the approach for social science by examining the evolution of attitudes on two high-profile issues in U.S. politics in two political communities on Reddit over the period spanning from the 2016 presidential campaign to the 2022 mid-term elections. WARNING: Potentially sensitive political content."
-}
-
-@inproceedings{du-etal-2026-legibility,
-    title = "Legibility is Not Interpretability: Comparing Judged and Actual Importance in Chain-of-Thought Reasoning",
-    author = "Du, Kevin  and
-      Hoyle, Alexander  and
-      Ruis, Laura  and
-      Locatelli, Acyr",
-    booktitle = "COLM",
-    year = "2026",
-    url = "https://openreview.net/forum?id=Qhex5RJmzs",
-}
-
-@inproceedings{kohler-etal-2026-read,
-    title = "Read the Paper, Write the Code: Agentic Reproduction of Social-Science Results",
-    author = "Kohler, Benjamin  and
-      Zollikofer, David  and
-      Einsiedler, Johanna  and
-      Hoyle*, Alexander  and
-      Ash*, Elliott",
-    booktitle = "EMNLP",
-    year = "2026",
-    url = "https://arxiv.org/abs/2604.21965",
-    abstract = "Recent work has used LLM agents to reproduce empirical social science results with access to both the data and code. We broaden this scope by asking: Can they reproduce results given only a paper's methods description and original data? We develop an agentic reproduction system that extracts structured methods descriptions from papers, runs reimplementations under strict information isolation---agents never see the original code, results, or paper---and enables deterministic, cell-level comparison of reproduced outputs to the original results. An error attribution step traces discrepancies through the system chain to identify root causes. Evaluating four agent scaffolds and four LLMs on 48 papers with human-verified reproducibility, we find that agents can largely recover published results, but performance varies substantially between models, scaffolds, and papers. Root cause analysis reveals that failures stem both from agent errors and from underspecification in the papers themselves.",
 }
